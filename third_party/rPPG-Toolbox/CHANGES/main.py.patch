@@ -1,0 +1,136 @@
+--- a/main.py
++++ b/main.py
+@@ -1,6 +1,7 @@
+ """ The main function of rPPG deep learning pipeline."""
+ 
+ import argparse
++import os
+ import random
+ import time
+ 
+@@ -12,7 +13,7 @@
+ from unsupervised_methods.unsupervised_predictor import unsupervised_predict
+ from torch.utils.data import DataLoader
+ 
+-RANDOM_SEED = 100
++RANDOM_SEED = int(os.environ.get('RPPG_SEED', 100))
+ torch.manual_seed(RANDOM_SEED)
+ torch.cuda.manual_seed(RANDOM_SEED)
+ np.random.seed(RANDOM_SEED)
+@@ -28,6 +29,11 @@
+ train_generator = torch.Generator()
+ train_generator.manual_seed(RANDOM_SEED)
+ 
++# KR-rPPG: data-loader workers and prefetch are configurable (upstream: 16 workers); the defaults keep
++# RAM use moderate when two GPUs train at once. Not result-relevant.
++RPPG_DATALOADER_WORKERS = int(os.environ.get("RPPG_DATALOADER_WORKERS", 4))
++RPPG_PREFETCH_FACTOR = int(os.environ.get("RPPG_PREFETCH_FACTOR", 2))
++
+ 
+ def seed_worker(worker_id):
+     worker_seed = torch.initial_seed() % 2 ** 32
+@@ -176,9 +182,11 @@
+             train_loader = data_loader.LADHLoader.LADHLoader
+         elif config.TRAIN.DATA.DATASET == "SUMS":
+             train_loader = data_loader.SUMSLoader.SUMSLoader
++        elif config.TRAIN.DATA.DATASET == "KoreanrPPG":
++            train_loader = data_loader.KoreanrPPGLoader.KoreanrPPGLoader
+         else:
+             raise ValueError("Unsupported dataset! Currently supporting UBFC-rPPG, PURE, MMPD, \
+-                             SCAMPS, BP4D+ (Normal and BigSmall preprocessing), UBFC-PHYS and iBVP.")
++                             SCAMPS, BP4D+ (Normal and BigSmall preprocessing), UBFC-PHYS, iBVP, and KoreanrPPG.")
+ 
+         # Create and initialize the train dataloader given the correct toolbox mode,
+         # a supported dataset name, and a valid dataset paths
+@@ -191,11 +199,14 @@
+                 device=config.DEVICE)
+             data_loader_dict['train'] = DataLoader(
+                 dataset=train_data_loader,
+-                num_workers=16,
++                num_workers=RPPG_DATALOADER_WORKERS,
+                 batch_size=config.TRAIN.BATCH_SIZE,
+                 shuffle=True,
+                 worker_init_fn=seed_worker,
+-                generator=train_generator
++                generator=train_generator,
++                pin_memory=True,
++                persistent_workers=True,
++                prefetch_factor=RPPG_PREFETCH_FACTOR,
+             )
+         else:
+             data_loader_dict['train'] = None
+@@ -223,11 +234,13 @@
+             valid_loader = data_loader.LADHLoader.LADHLoader
+         elif config.VALID.DATA.DATASET == "SUMS":
+             valid_loader = data_loader.SUMSLoader.SUMSLoader
++        elif config.VALID.DATA.DATASET == "KoreanrPPG":
++            valid_loader = data_loader.KoreanrPPGLoader.KoreanrPPGLoader
+         elif config.VALID.DATA.DATASET is None and not config.TEST.USE_LAST_EPOCH:
+             raise ValueError("Validation dataset not specified despite USE_LAST_EPOCH set to False!")
+         else:
+             raise ValueError("Unsupported dataset! Currently supporting UBFC-rPPG, PURE, MMPD, \
+-                             SCAMPS, BP4D+ (Normal and BigSmall preprocessing), UBFC-PHYS and iBVP")
++                             SCAMPS, BP4D+ (Normal and BigSmall preprocessing), UBFC-PHYS, iBVP, and KoreanrPPG")
+         
+         # Create and initialize the valid dataloader given the correct toolbox mode,
+         # a supported dataset name, and a valid dataset path
+@@ -239,11 +252,14 @@
+                 device=config.DEVICE)
+             data_loader_dict["valid"] = DataLoader(
+                 dataset=valid_data,
+-                num_workers=16,
++                num_workers=RPPG_DATALOADER_WORKERS,
+                 batch_size=config.TRAIN.BATCH_SIZE,  # batch size for val is the same as train
+                 shuffle=False,
+                 worker_init_fn=seed_worker,
+-                generator=general_generator
++                generator=general_generator,
++                pin_memory=True,
++                persistent_workers=True,
++                prefetch_factor=RPPG_PREFETCH_FACTOR,
+             )
+         else:
+             data_loader_dict['valid'] = None
+@@ -272,9 +288,11 @@
+             test_loader = data_loader.LADHLoader.LADHLoader
+         elif config.TEST.DATA.DATASET == "SUMS":
+             test_loader = data_loader.SUMSLoader.SUMSLoader
++        elif config.TEST.DATA.DATASET == "KoreanrPPG":
++            test_loader = data_loader.KoreanrPPGLoader.KoreanrPPGLoader
+         else:
+             raise ValueError("Unsupported dataset! Currently supporting UBFC-rPPG, PURE, MMPD, \
+-                             SCAMPS, BP4D+ (Normal and BigSmall preprocessing), UBFC-PHYS and iBVP.")
++                             SCAMPS, BP4D+ (Normal and BigSmall preprocessing), UBFC-PHYS, iBVP, and KoreanrPPG.")
+         
+         if config.TOOLBOX_MODE == "train_and_test" and config.TEST.USE_LAST_EPOCH:
+             print("Testing uses last epoch, validation dataset is not required.", end='\n\n')   
+@@ -289,11 +307,14 @@
+                 device=config.DEVICE)
+             data_loader_dict["test"] = DataLoader(
+                 dataset=test_data,
+-                num_workers=16,
++                num_workers=RPPG_DATALOADER_WORKERS,
+                 batch_size=config.INFERENCE.BATCH_SIZE,
+                 shuffle=False,
+                 worker_init_fn=seed_worker,
+-                generator=general_generator
++                generator=general_generator,
++                pin_memory=True,
++                persistent_workers=True,
++                prefetch_factor=RPPG_PREFETCH_FACTOR,
+             )
+         else:
+             data_loader_dict['test'] = None
+@@ -314,9 +335,11 @@
+             unsupervised_loader = data_loader.UBFCPHYSLoader.UBFCPHYSLoader
+         elif config.UNSUPERVISED.DATA.DATASET == "iBVP":
+             unsupervised_loader = data_loader.iBVPLoader.iBVPLoader
++        elif config.UNSUPERVISED.DATA.DATASET == "KoreanrPPG":
++            unsupervised_loader = data_loader.KoreanrPPGLoader.KoreanrPPGLoader
+         else:
+             raise ValueError("Unsupported dataset! Currently supporting UBFC-rPPG, PURE, MMPD, \
+-                             SCAMPS, BP4D+, UBFC-PHYS and iBVP.")
++                             SCAMPS, BP4D+, UBFC-PHYS, iBVP, and KoreanrPPG.")
+         
+         unsupervised_data = unsupervised_loader(
+             name="unsupervised",

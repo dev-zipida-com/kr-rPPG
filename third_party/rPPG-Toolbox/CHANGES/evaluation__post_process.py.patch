@@ -1,0 +1,80 @@
+--- a/evaluation/post_process.py
++++ b/evaluation/post_process.py
+@@ -14,18 +14,21 @@
+     return 1 if x == 0 else 2 ** (x - 1).bit_length()
+ 
+ def _detrend(input_signal, lambda_value):
+-    """Detrend PPG signal."""
++    """Detrend PPG signal using Tarvainen's method with sparse solver.
++
++    Uses sparse Cholesky/LU solve instead of dense matrix inversion,
++    reducing complexity from O(n^3) to O(n) for banded systems.
++    """
+     signal_length = input_signal.shape[0]
+-    # observation matrix
+-    H = np.identity(signal_length)
+     ones = np.ones(signal_length)
+     minus_twos = -2 * np.ones(signal_length)
+     diags_data = np.array([ones, minus_twos, ones])
+     diags_index = np.array([0, 1, 2])
+     D = spdiags(diags_data, diags_index,
+-                (signal_length - 2), signal_length).toarray()
+-    detrended_signal = np.dot(
+-        (H - np.linalg.inv(H + (lambda_value ** 2) * np.dot(D.T, D))), input_signal)
++                (signal_length - 2), signal_length)
++    A = scipy.sparse.eye(signal_length) + (lambda_value ** 2) * D.T.dot(D)
++    trend = scipy.sparse.linalg.spsolve(A.tocsc(), input_signal)
++    detrended_signal = input_signal - trend
+     return detrended_signal
+ 
+ def power2db(mag):
+@@ -52,28 +55,33 @@
+     return hr_peak
+ 
+ def _compute_macc(pred_signal, gt_signal):
+-    """Calculate maximum amplitude of cross correlation (MACC) by computing correlation at all time lags.
++    """Calculate maximum amplitude of cross correlation (MACC) using FFT-based
++    cross-correlation, reducing complexity from O(n^2) to O(n log n).
+         Args:
+-            pred_ppg_signal(np.array): predicted PPG signal 
+-            label_ppg_signal(np.array): ground truth, label PPG signal
++            pred_signal(np.array): predicted PPG signal
++            gt_signal(np.array): ground truth, label PPG signal
+         Returns:
+             MACC(float): Maximum Amplitude of Cross-Correlation
+     """
+-    pred = deepcopy(pred_signal)
+-    gt = deepcopy(gt_signal)
+-    pred = np.squeeze(pred)
+-    gt = np.squeeze(gt)
+-    min_len = np.min((len(pred), len(gt)))
++    pred = np.squeeze(pred_signal).copy()
++    gt = np.squeeze(gt_signal).copy()
++    min_len = min(len(pred), len(gt))
+     pred = pred[:min_len]
+     gt = gt[:min_len]
+-    lags = np.arange(0, len(pred)-1, 1)
+-    tlcc_list = []
+-    for lag in lags:
+-        cross_corr = np.abs(np.corrcoef(
+-            pred, np.roll(gt, lag))[0][1])
+-        tlcc_list.append(cross_corr)
+-    macc = max(tlcc_list)
+-    return macc
++    # Normalize to zero mean, unit variance for Pearson-like correlation
++    pred = (pred - np.mean(pred))
++    gt = (gt - np.mean(gt))
++    pred_std = np.std(pred)
++    gt_std = np.std(gt)
++    if pred_std < 1e-8 or gt_std < 1e-8:
++        return 0.0
++    pred = pred / pred_std
++    gt = gt / gt_std
++    # FFT-based cross-correlation: O(n log n) instead of O(n^2) loop
++    corr = scipy.signal.correlate(pred, gt, mode='full', method='fft')
++    corr = corr / min_len
++    macc = np.max(np.abs(corr))
++    return float(macc)
+ 
+ def _calculate_SNR(pred_ppg_signal, hr_label, fs=30, low_pass=0.6, high_pass=3.3):
+     """Calculate SNR as the ratio of the area under the curve of the frequency spectrum around the first and second harmonics 

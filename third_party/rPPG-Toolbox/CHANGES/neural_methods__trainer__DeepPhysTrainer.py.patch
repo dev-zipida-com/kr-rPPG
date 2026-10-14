@@ -1,0 +1,50 @@
+--- a/neural_methods/trainer/DeepPhysTrainer.py
++++ b/neural_methods/trainer/DeepPhysTrainer.py
+@@ -33,13 +33,19 @@
+             self.model = DeepPhys(img_size=config.TRAIN.DATA.PREPROCESS.RESIZE.H).to(self.device)
+             self.model = torch.nn.DataParallel(self.model, device_ids=list(range(config.NUM_OF_GPU_TRAIN)))
+ 
++            # Load pretrained model for transfer learning
++            if config.TRAIN.PRETRAINED_MODEL:
++                print(f"Loading pretrained model: {config.TRAIN.PRETRAINED_MODEL}")
++                self.model.load_state_dict(torch.load(config.TRAIN.PRETRAINED_MODEL, map_location=self.device, weights_only=True))
++                print("Pretrained model loaded successfully!")
++
+             self.num_train_batches = len(data_loader["train"])
+             self.criterion = torch.nn.MSELoss()
+             self.optimizer = optim.AdamW(
+                 self.model.parameters(), lr=config.TRAIN.LR, weight_decay=0)
+-            # See more details on the OneCycleLR scheduler here: https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.OneCycleLR.html
+-            self.scheduler = torch.optim.lr_scheduler.OneCycleLR(
+-                self.optimizer, max_lr=config.TRAIN.LR, epochs=config.TRAIN.EPOCHS, steps_per_epoch=self.num_train_batches)
++            # Use constant LR (no warmup)
++            self.scheduler = torch.optim.lr_scheduler.ConstantLR(
++                self.optimizer, factor=1.0, total_iters=config.TRAIN.EPOCHS * self.num_train_batches)
+         elif config.TOOLBOX_MODE == "only_test":
+             self.model = DeepPhys(img_size=config.TEST.DATA.PREPROCESS.RESIZE.H).to(self.device)
+             self.model = torch.nn.DataParallel(self.model, device_ids=list(range(config.NUM_OF_GPU_TRAIN)))
+@@ -152,7 +158,7 @@
+         if self.config.TOOLBOX_MODE == "only_test":
+             if not os.path.exists(self.config.INFERENCE.MODEL_PATH):
+                 raise ValueError("Inference model path error! Please check INFERENCE.MODEL_PATH in your yaml.")
+-            self.model.load_state_dict(torch.load(self.config.INFERENCE.MODEL_PATH))
++            self.model.load_state_dict(torch.load(self.config.INFERENCE.MODEL_PATH, weights_only=True))
+             print("Testing uses pretrained model!")
+         else:
+             if self.config.TEST.USE_LAST_EPOCH:
+@@ -160,13 +166,13 @@
+                 self.model_dir, self.model_file_name + '_Epoch' + str(self.max_epoch_num - 1) + '.pth')
+                 print("Testing uses last epoch as non-pretrained model!")
+                 print(last_epoch_model_path)
+-                self.model.load_state_dict(torch.load(last_epoch_model_path))
++                self.model.load_state_dict(torch.load(last_epoch_model_path, weights_only=True))
+             else:
+                 best_model_path = os.path.join(
+                     self.model_dir, self.model_file_name + '_Epoch' + str(self.best_epoch) + '.pth')
+                 print("Testing uses best epoch selected using model selection as non-pretrained model!")
+                 print(best_model_path)
+-                self.model.load_state_dict(torch.load(best_model_path))
++                self.model.load_state_dict(torch.load(best_model_path, weights_only=True))
+ 
+         self.model = self.model.to(self.config.DEVICE)
+         self.model.eval()

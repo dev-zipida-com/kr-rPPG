@@ -1,0 +1,45 @@
+--- a/dataset/data_loader/MMPDLoader.py
++++ b/dataset/data_loader/MMPDLoader.py
+@@ -55,7 +55,7 @@
+     def get_raw_data(self, raw_data_path):
+         """Returns data directories under the path(For MMPD dataset)."""
+ 
+-        data_dirs = glob.glob(raw_data_path + os.sep + 'subject*')
++        data_dirs = sorted(glob.glob(raw_data_path + os.sep + 'subject*'))
+         if not data_dirs:
+             raise ValueError(self.dataset_name + ' data paths empty!')
+         dirs = list()
+@@ -183,6 +183,33 @@
+         self.labels = labels
+         self.preprocessed_data_len = len(inputs)
+ 
++    def build_file_list_retroactive(self, data_dirs, begin, end):
++        """Override BaseLoader to match MMPD's file naming convention.
++
++        MMPD preprocessed files use: subject{N}_L{light}_MO{motion}_..._input{chunk}.npy
++        But BaseLoader uses 'index' (session number '0','1',...) which doesn't match.
++        This override uses 'subject' field to glob correctly.
++        """
++        data_dirs_subset = self.split_raw_data(data_dirs, begin, end)
++
++        # Extract unique subject numbers from the split
++        subject_nums = sorted(set(d['subject'] for d in data_dirs_subset))
++
++        # Glob for all preprocessed input files matching each subject
++        file_list = []
++        for subj in subject_nums:
++            pattern = os.path.join(self.cached_path, f"subject{subj}_*_input*.npy")
++            matched = sorted(glob.glob(pattern))
++            file_list.extend(matched)
++
++        if not file_list:
++            raise ValueError(self.dataset_name,
++                             'File list empty. Check preprocessed data folder exists and is not empty.')
++
++        file_list_df = pd.DataFrame(file_list, columns=['input_files'])
++        os.makedirs(os.path.dirname(self.file_list_path), exist_ok=True)
++        file_list_df.to_csv(self.file_list_path)
++
+     @staticmethod
+     def get_information(information):
+         light = ''

@@ -1,0 +1,45 @@
+# Python / tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage*
+htmlcov/
+.venv/
+venv*/
+*.egg-info/
+.ipynb_checkpoints/
+.DS_Store
+.idea/
+.vscode/
+
+# Never commit data, caches, runs, results or weights (keep them in $KR_RPPG_WORK / $KR_RPPG_CHECKPOINTS)
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.onnx
+*.npy
+*.npz
+*.pickle
+*.pkl
+*.avi
+*.mp4
+*.mkv
+*.xlsx
+*.log
+runs/
+logs/
+results/
+PreprocessedData/
+KR-rPPG/
+figure3.*
+.env*
+
+# rPPG-Toolbox files whose header states GPL-3.0 ancestry (see THIRD_PARTY_NOTICES.md): NOT part of this
+# repository, never commit them, wherever they are placed. tools/fetch_physformer_loss.py installs the PhysFormer
+# loss in third_party/rPPG-Toolbox/neural_methods/loss/ unless --dest / KR_RPPG_PHYSFORMER_LOSS name another file.
+PhysFormerLossComputer.py
+PhysFormerLossComputer.py.part
+RythmFormerLossComputer.py
