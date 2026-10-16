@@ -235,19 +235,19 @@ def test_make_dirs_is_refused_in_source(roots):
 
 # --- release IDs --------------------------------------------------------------
 
-KEYS = ["seoul_p903", "incheon_p902", "incheon_p901"]
+KEYS = ["A_p903", "C_p902", "C_p901"]
 
 
 def test_sorted_order_assigns_ids_by_site_then_number():
     assert assign_release_ids(KEYS, order="sorted") == {
-        "incheon_p901": "p001",
-        "incheon_p902": "p002",
-        "seoul_p903": "p003",
+        "A_p903": "p001",
+        "C_p901": "p002",
+        "C_p902": "p003",
     }
 
 
 def test_random_order_is_a_seeded_bijection():
-    keys = [f"incheon_p{i:03d}" for i in range(1, 51)]
+    keys = [f"C_p{i:03d}" for i in range(1, 51)]
     first = assign_release_ids(keys, order="random", seed=7)
     assert first == assign_release_ids(keys, order="random", seed=7)
     assert set(first.values()) == {f"p{i:03d}" for i in range(1, 51)}
@@ -300,4 +300,4 @@ def test_existing_mapping_with_different_participants_is_rejected(roots):
     path = priv / "participant_id_map.csv"
     load_or_create_mapping(policy, path, KEYS, order="sorted", seed=None)
     with pytest.raises(ValueError):
-        load_or_create_mapping(policy, path, KEYS + ["seoul_p905"], order="sorted", seed=None)
+        load_or_create_mapping(policy, path, KEYS + ["A_p905"], order="sorted", seed=None)

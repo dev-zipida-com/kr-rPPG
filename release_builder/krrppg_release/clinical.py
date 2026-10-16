@@ -4,10 +4,11 @@ KR-rPPG/metadata/participants.csv keeps the 24 variables of manuscript Table 6, 
 coded as manuscript Table 6 describes them (since 1.4.0; the categories of 1.2.x-1.3.0 are no longer used):
 
     participant_key  random release ID pNNN
-    site, sex        as recorded               age              years (whole number, as in the CRF)
+    site             site letter A / B / C     sex              as recorded
+    age              years (whole number, as in the CRF)
     height           rounded to 5 cm           weight           rounded to 2 kg
     bmi              weight / (height / 100)^2 of the rounded height and weight, one decimal (released_bmi)
-    makeup ... ild   0/1 flags (ild: incheon only, blank = not ascertained)
+    makeup ... ild   0/1 flags (ild: site C only, blank = not ascertained)
     sbp, dbp         rounded to 5 mmHg         hr_rest          rounded to 2 bpm
     hba1c            rounded to 0.5 %          fpg              rounded to 10 mg/dL
     creatinine       rounded to 0.1 mg/dL      gfr              rounded to 5 mL/min/1.73 m^2
@@ -22,6 +23,9 @@ check removes a value: values the 1.3.0 rules blanked are released as recorded i
 only counted; the two in-memory corrections that add information are kept (eGFR computed with CKD-EPI 2009 from
 creatinine when the CRF eGFR is missing, eGFR < 15 counted as renal disease). The CRF workbooks are opened
 read-only and never written.
+
+Since 1.5.0 the collection sites are named only by the letters A, B and C (SITE_PREFIX maps the CRF screening-
+number prefix to the letter), in participants.csv, in the dictionary and in the private `site_pNNN` keys.
 """
 
 from __future__ import annotations
@@ -41,8 +45,10 @@ import pandas as pd
 DEFAULT_ILD_XLSX = Path(os.environ["KRRPPG_ILD_XLSX"]) if os.environ.get("KRRPPG_ILD_XLSX") else None
 CRF_FILENAME = os.environ.get("KRRPPG_CRF_FILENAME", "crf.xlsx")
 SCREENING_COL = "Subject Screening NO"
-SITE_PREFIX = {"01": "seoul", "03": "saintvincent", "04": "incheon"}
-SITES = ("incheon", "saintvincent", "seoul")
+# CRF screening-number prefix -> collection site letter (released as is in the site column since 1.5.0).
+SITE_PREFIX = {"01": "A", "03": "B", "04": "C"}
+SITES = ("A", "B", "C")
+ILD_SITE = "C"  # the CRF ILD item was ascertained at this site only
 MISSING_TOKENS = ["-", "ND", "NA", "N/A", "na", "nan", "None", ""]
 PRESENT, ABSENT = 1, 2  # CRF coding for binary items
 RAW_NUMERIC = {
@@ -220,7 +226,7 @@ PARTICIPANT_CATEGORIES: Dict[str, Tuple[str, ...]] = {name: CODINGS[name].catego
 # --- reading ---------------------------------------------------------------------------
 
 def screening_to_key(value) -> Optional[str]:
-    """`04-S906` / `03-s904` -> `incheon_p906` / `saintvincent_p904`."""
+    """`04-S906` / `03-s904` -> `C_p906` / `B_p904`."""
     match = re.match(r"^(\d{2})[-_]s(\d+)$", str(value).strip(), re.IGNORECASE)
     if not match or match.group(1) not in SITE_PREFIX:
         return None
@@ -270,12 +276,12 @@ def load_raw(sources: CrfSources, keys: Sequence[str]) -> pd.DataFrame:
     ild = _keyed_sheet(sources.ild_xlsx, sources.ild_sheet, sources.header_row)["ILD"]
     coded = ild.astype(str).str.strip().str.upper().map({"O": 1.0, "X": 0.0})
     raw["interstitial_lung_disease"] = coded.reindex(raw.index)
-    uncovered = raw.loc[raw["site"] == "incheon", "interstitial_lung_disease"].isna()
+    uncovered = raw.loc[raw["site"] == ILD_SITE, "interstitial_lung_disease"].isna()
     if uncovered.any():
-        raise ValueError(f"{int(uncovered.sum())} incheon participants have no O/X value for CRF ILD")
-    outside = raw.loc[raw["site"] != "incheon", "interstitial_lung_disease"].notna()
+        raise ValueError(f"{int(uncovered.sum())} site {ILD_SITE} participants have no O/X value for CRF ILD")
+    outside = raw.loc[raw["site"] != ILD_SITE, "interstitial_lung_disease"].notna()
     if outside.any():
-        raise ValueError("interstitial lung disease (CRF ILD) is recorded outside incheon")
+        raise ValueError(f"interstitial lung disease (CRF ILD) is recorded outside site {ILD_SITE}")
     return raw
 
 
@@ -393,10 +399,11 @@ def derive_rows(data: pd.DataFrame, mapping: Dict[str, str]) -> List[List[str]]:
 
 # Manuscript Table 6: description and unit / coding of every column (spelled 'creatinine'; units written with
 # m^2). Added to the Table 6 text: the two kept corrections (gfr, other_comorbidity_count) and the 1.2.1 hr_rest
-# clarification. '{observed}' is replaced by the observed range of the count (participants_dictionary).
+# clarification; since 1.5.0 site and ild name the site letters. '{observed}' is replaced by the observed range of
+# the count (participants_dictionary).
 DICTIONARY = {
     "participant_key": ("Identifier", "Pseudonymized participant identifier (pNNN; e.g., p001)", "-"),
-    "site": ("Demographics", "Collection site (seoul / incheon / saintvincent)", "-"),
+    "site": ("Demographics", "Collection site (A / B / C)", "-"),
     "age": ("Demographics", "Age at enrollment", "years"),
     "sex": ("Demographics", "Biological sex", "M/F"),
     "height": ("Demographics", "Body height", "cm, rounded to 5"),
@@ -427,7 +434,7 @@ DICTIONARY = {
     "dm": ("Comorbidity indicators", "Diabetes mellitus", "0/1"),
     "htn": ("Comorbidity indicators", "Hypertension", "0/1"),
     "dyslipidemia": ("Comorbidity indicators", "Dyslipidemia", "0/1"),
-    "ild": ("Comorbidity indicators", "Interstitial lung disease (incheon site only; blank = not ascertained)", "0/1"),
+    "ild": ("Comorbidity indicators", "Interstitial lung disease (site C only; blank = not ascertained)", "0/1"),
     "other_comorbidity_count": (
         "Comorbidity indicators",
         ("Number of positive indicators among cardiovascular disease, cerebrovascular disease, cancer, renal disease, "

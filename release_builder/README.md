@@ -47,7 +47,7 @@ moment earlier; on local disks it is a normal test.
 python -m krrppg_release verify --release-root /path/to/KR-rPPG --workers 8
 
 # custodian: build (the source and the CRF are only read)
-export KRRPPG_SOURCE=/path/to/source        # <site>/<group>/pNNN/T0x/ + metadata/
+export KRRPPG_SOURCE=/path/to/source        # <site>/<group>/pNNN/T0x/ (site = A, B or C) + metadata/
 export KRRPPG_PROTECTED_ROOTS=/path/to/source_dataset:/path/to/other_protected_folder
 python -m krrppg_release build --output-dir /path/to/out --private-dir /path/to/private \
        --crf /path/to/crf.xlsx --crf-ild /path/to/ild.xlsx --workers 8
@@ -56,7 +56,7 @@ python -m krrppg_release verify --release-root /path/to/out/KR-rPPG --source "$K
 ```
 
 Custodian paths and workbook settings come from the command line or the environment (built in are only the
-three site names and the screening-number prefixes that map CRF rows to them, `clinical.SITE_PREFIX`):
+three site letters A, B and C and the screening-number prefixes that map CRF rows to them, `clinical.SITE_PREFIX`):
 
 | Variable | Meaning |
 |---|---|
@@ -84,9 +84,10 @@ Since builder 1.4.0 every column is coded as manuscript Table 6 describes it (`c
 categories of builders 1.2.x-1.3.0 (age bands, height and weight bins, BMI classes, a comorbidity count
 top-coded at `>=1`) are no longer used. The columns are of two kinds:
 
-* **Categorical** (`clinical.CATEGORICAL_COLUMNS`): `site` and `sex` as recorded; `makeup`, `glasses`,
-  `accessories`, `dm`, `htn`, `dyslipidemia` and `ild` as 0/1 (`ild` = interstitial lung disease, ascertained
-  at the incheon site only and blank elsewhere).
+* **Categorical** (`clinical.CATEGORICAL_COLUMNS`): `site` as the collection-site letter `A`, `B` or `C`
+  (since builder 1.5.0; the sites are not named), `sex` as recorded; `makeup`, `glasses`, `accessories`, `dm`,
+  `htn`, `dyslipidemia` and `ild` as 0/1 (`ild` = interstitial lung disease, ascertained at site C only and blank
+  elsewhere).
 * **Numbers** (`clinical.NUMERIC_COLUMNS`), one note per column:
 
 | Column | Coding | Written as |
@@ -144,7 +145,7 @@ dictionary, including the availability counts and the observed range, differs fr
 categories held by fewer than 5 participants (categorical columns only) and about release IDs that follow
 site order.
 
-Builders 1.3.0 and 1.4.0 change only `participants.csv` and `participants_dictionary.csv`. Per-session outputs
+Builders 1.3.0, 1.4.0 and 1.5.0 change only `participants.csv` and `participants_dictionary.csv`. Per-session outputs
 are unchanged since 1.1.0 (`constants.SESSION_OUTPUT_VERSION`), so `build --metadata-only` rewrites the
 metadata of an existing release without writing any session file.
 

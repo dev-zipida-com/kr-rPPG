@@ -18,7 +18,7 @@ from krrppg_release.ownership import ReleaseConflictError
 from krrppg_release.cli import main
 from krrppg_release.ids import parse_mapping_csv
 from krrppg_release.safety import BuildLockedError, PathPolicy, UnsafePathError
-from krrppg_release.verify import verify_release
+from krrppg_release.verify import VerifyReport, _check_participants, verify_release
 
 SIZE = (FRAME_W, FRAME_H)
 
@@ -65,9 +65,9 @@ def test_build_creates_figure2_layout_without_touching_source(fake_source):
     assert sorted(os.listdir(release)) == ["metadata", "p001", "p002", "p003"]
 
     ids = _mapping(cfg)
-    assert sorted(os.listdir(release / ids["incheon_p901"])) == ["T00", "T01"]
-    assert os.listdir(release / ids["incheon_p902"]) == ["T00"]  # T01 exists in source but is not released
-    assert os.listdir(release / ids["seoul_p903"]) == ["T02"]
+    assert sorted(os.listdir(release / ids["C_p901"])) == ["T00", "T01"]
+    assert os.listdir(release / ids["C_p902"]) == ["T00"]  # T01 exists in source but is not released
+    assert os.listdir(release / ids["A_p903"]) == ["T02"]
     for pid in ("p001", "p002", "p003"):
         for task in os.listdir(release / pid):
             assert sorted(os.listdir(release / pid / task)) == sorted(C.RELEASE_SESSION_FILES)
@@ -94,7 +94,7 @@ def test_private_dir_inside_output_is_refused(fake_source):
 
 
 def test_participant_subset_builds_only_selected_sessions(fake_source):
-    cfg = _config(fake_source, participants=("seoul_p903",))
+    cfg = _config(fake_source, participants=("A_p903",))
     report = build_release(cfg)
     assert (report["built"], report["failed"]) == (1, 0)
     assert _verify(cfg, partial=True).errors == []
@@ -128,14 +128,14 @@ def test_process_pool_build_matches_serial_build(fake_source):
 
 
 def test_bad_session_is_reported_and_others_still_build(fake_source):
-    bvp = fake_source["root"] / "seoul" / "01-groupa" / "p903" / "T02" / C.BVP_SYNC
+    bvp = fake_source["root"] / "A" / "01-groupa" / "p903" / "T02" / C.BVP_SYNC
     lines = bvp.read_text().splitlines()
     bvp.write_text("\n".join(lines[:-1]) + "\n")  # synthetic source only
     cfg = _config(fake_source)
     report = build_release(cfg)
     assert (report["built"], report["failed"]) == (3, 1)
     assert "BVP_synchronized.csv" in report["failures"][0]["error"]
-    failed_dir = cfg.release_root / _mapping(cfg)["seoul_p903"] / "T02"
+    failed_dir = cfg.release_root / _mapping(cfg)["A_p903"] / "T02"
     assert not (failed_dir / C.RELEASE_VIDEO).exists()
 
 
@@ -176,7 +176,7 @@ def _epoch_timestamps(session, release):
 
 def _old_identifier(session, release):
     path = release / "metadata" / "fold_assignment.csv"
-    path.write_text(path.read_text() + "incheon_p901,1\n")
+    path.write_text(path.read_text() + "C_p901,1\n")
 
 
 def _partial_leftover(session, release):
@@ -190,7 +190,7 @@ def _info_txt_left_behind(session, release):
 def _site_in_folds(session, release):
     path = release / "metadata" / "fold_assignment.csv"
     lines = path.read_text().splitlines()
-    path.write_text("\n".join([lines[0] + ",site"] + [line + ",seoul" for line in lines[1:]]) + "\n")
+    path.write_text("\n".join([lines[0] + ",site"] + [line + ",A" for line in lines[1:]]) + "\n")
 
 
 def _rewrite_participants(release, edit):
@@ -374,6 +374,17 @@ def test_verifier_never_quotes_participant_values(fake_source):
     assert not any("60-69" in e or "'X'" in e for e in errors)
 
 
+def test_verifier_accepts_only_site_letters(fake_source):
+    cfg = _config(fake_source)
+    build_release(cfg)
+    _set_recorded_cell(cfg.release_root, "site", "B")  # another site letter: valid
+    assert _verify(cfg).errors == []
+    _set_recorded_cell(cfg.release_root, "site", "Site-X")  # anything else (e.g. a site name) is an error
+    errors = _verify(cfg).errors
+    assert errors == [f"participants.csv: 1 site cells hold a value outside {['A', 'B', 'C']} (blank = missing)"]
+    assert not any("Site-X" in e for e in errors)  # the value is never quoted
+
+
 def test_verifier_never_quotes_rounded_values(fake_source):
     cfg = _config(fake_source)
     build_release(cfg)
@@ -479,7 +490,7 @@ def test_regenerated_mapping_never_reuses_another_participants_outputs(fake_sour
 def test_changed_source_file_triggers_a_rebuild(fake_source):
     cfg = _config(fake_source)
     build_release(cfg)
-    boxes = fake_source["root"] / "seoul" / "01-groupa" / "p903" / "T02" / C.FACE_BBOXES
+    boxes = fake_source["root"] / "A" / "01-groupa" / "p903" / "T02" / C.FACE_BBOXES
     boxes.write_text(boxes.read_text().replace("8,8,40,40", "9,9,41,41"))  # synthetic source only
     report = build_release(cfg)
     assert (report["built"], report["skipped"]) == (1, 3)
@@ -487,7 +498,7 @@ def test_changed_source_file_triggers_a_rebuild(fake_source):
 
 
 def test_skipped_sessions_keep_their_warnings(fake_source):
-    boxes = fake_source["root"] / "seoul" / "01-groupa" / "p903" / "T02" / C.FACE_BBOXES
+    boxes = fake_source["root"] / "A" / "01-groupa" / "p903" / "T02" / C.FACE_BBOXES
     boxes.write_text("\n".join(boxes.read_text().splitlines()[:-1]) + "\n")
     cfg = _config(fake_source)
     first = build_release(cfg)
@@ -500,9 +511,9 @@ def test_withdrawn_session_is_reported_as_stale(fake_source):
     cfg = _config(fake_source)
     build_release(cfg)
     flags = fake_source["root"] / "metadata" / "task_session_availability.csv"
-    flags.write_text(flags.read_text().replace("incheon_p901,1,1,0,0", "incheon_p901,1,0,0,0"))
+    flags.write_text(flags.read_text().replace("C_p901,1,1,0,0", "C_p901,1,0,0,0"))
     report = build_release(cfg)
-    assert report["stale_entries"] == [f"{_mapping(cfg)['incheon_p901']}/T01"]
+    assert report["stale_entries"] == [f"{_mapping(cfg)['C_p901']}/T01"]
 
 
 def test_concurrent_build_is_refused(fake_source):
@@ -526,6 +537,16 @@ def test_site_ordered_numbering_is_flagged(fake_source):
     cfg = _config(fake_source, id_order="sorted")
     build_release(cfg)
     assert any("follow site order" in w for w in _verify(cfg).warnings)
+
+
+@pytest.mark.parametrize("sites, flagged", [(("C", "C", "B", "A"), True), (("A", "A", "C", "C"), True),
+                                             (("A", "C", "A", "C"), False), (("C", "C", "C", "C"), False)])
+def test_site_order_warning_needs_one_block_per_site(sites, flagged):
+    report = VerifyReport()
+    header = list(PARTICIPANT_COLUMNS)
+    rows = [[f"p{i:03d}", site] + [""] * (len(header) - 2) for i, site in enumerate(sites, start=1)]
+    _check_participants((header, rows), (["variable"], []), report)
+    assert any("follow site order" in w for w in report.warnings) == flagged
 
 
 def test_cli_does_not_offer_site_ordered_numbering(tmp_path):
@@ -576,10 +597,10 @@ def test_protected_roots_come_from_the_environment(monkeypatch, tmp_path):
 
 
 def test_metadata_only_version_bump_keeps_session_records_valid(fake_source):
-    assert __version__ == "1.4.0"
+    assert __version__ == "1.5.0"
     cfg = _config(fake_source)
     report = build_release(cfg)
-    assert report["builder_version"] == "1.4.0"
+    assert report["builder_version"] == "1.5.0"
     assert cfg.settings()["builder_version"] == C.SESSION_OUTPUT_VERSION == "1.1.0"
     records = [json.loads(p.read_text()) for p in cfg.records_dir.glob("*.json")]
     assert records and all(r["settings"]["builder_version"] == "1.1.0" for r in records)
@@ -620,14 +641,14 @@ def _block_means_16(frame):
 def test_16px_video_pixels_are_the_16px_block_means_of_the_source(fake_source):
     cfg = _config16(fake_source)
     build_release(cfg)
-    capture = cv2.VideoCapture(str(cfg.release_root / _mapping(cfg)["incheon_p901"] / "T00" / C.RELEASE_VIDEO))
+    capture = cv2.VideoCapture(str(cfg.release_root / _mapping(cfg)["C_p901"] / "T00" / C.RELEASE_VIDEO))
     decoded = []
     ok, frame = capture.read()
     while ok:
         decoded.append(frame)
         ok, frame = capture.read()
     capture.release()
-    source = fake_source["frames"][("incheon_p901", "T00")]
+    source = fake_source["frames"][("C_p901", "T00")]
     assert len(decoded) == len(source)
     for got, src in zip(decoded, source):
         assert np.array_equal(got, _block_means_16(src))
@@ -892,7 +913,7 @@ def test_metadata_refresh_rewrites_only_the_changed_metadata_files(fake_source):
     assert report["metadata_written"] == ["participants.csv", "participants_dictionary.csv"]
     assert report["metadata_unchanged"] == ["fold_assignment.csv", "task_session_availability.csv"]
     assert report["release_unchanged_outside_metadata"] is True and report["release_changes_outside_metadata"] == []
-    assert report["source_unchanged"] is True and report["builder_version"] == __version__ == "1.4.0"
+    assert report["source_unchanged"] is True and report["builder_version"] == __version__ == "1.5.0"
     assert report["release_entries_watched"] > 20
     assert {name: (cfg.release_root / "metadata" / name).read_bytes() for name in C.METADATA_FILES} == expected
     assert _outside_metadata(cfg) == outside  # every session file: same bytes, size, mtime and ctime
@@ -1028,7 +1049,7 @@ def test_cli_rejects_unsupported_block_sizes(tmp_path, capsys, command, block):
 def test_cli_returns_error_code_when_sessions_fail(fake_source):
     root = fake_source["root"]
     work = fake_source["workdir"]
-    (root / "incheon" / "02-groupb" / "p901" / "T00" / C.HR_SYNC).write_text("frame,timestamp,hr\n")
+    (root / "C" / "02-groupb" / "p901" / "T00" / C.HR_SYNC).write_text("frame,timestamp,hr\n")
     rc = main(
         ["build", "--source", str(root), "--output-dir", str(work / "o"), "--private-dir", str(work / "p"),
          "--crf-ild", str(fake_source["ild_xlsx"]), "--workers", "1", "--frame-size", f"{FRAME_W}x{FRAME_H}"]

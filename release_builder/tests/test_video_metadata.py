@@ -25,7 +25,7 @@ def _setup(fake_source):
 
 
 def _source_video(src):
-    return src / "incheon" / "02-groupb" / "p901" / "T00" / C.SOURCE_VIDEO
+    return src / "C" / "02-groupb" / "p901" / "T00" / C.SOURCE_VIDEO
 
 
 def _read_frames(path):
@@ -49,7 +49,7 @@ def test_transcode_writes_lossless_bfdt_ffv1(fake_source):
         policy, _source_video(src), dst, expected_frames=N_FRAMES, expected_size=(FRAME_W, FRAME_H)
     )
     assert summary.frames == N_FRAMES
-    expected = [bfdt_frame(f) for f in fake_source["frames"][("incheon_p901", "T00")]]
+    expected = [bfdt_frame(f) for f in fake_source["frames"][("C_p901", "T00")]]
     written = _read_frames(dst)
     assert len(written) == N_FRAMES
     assert all(np.array_equal(a, b) for a, b in zip(expected, written))
@@ -100,7 +100,7 @@ def test_inspect_rejects_missing_file(tmp_path):
 
 # --- metadata ---------------------------------------------------------------------------------
 
-MAPPING = {"incheon_p901": "p002", "incheon_p902": "p003", "seoul_p903": "p001"}
+MAPPING = {"C_p901": "p002", "C_p902": "p003", "A_p903": "p001"}
 
 
 def _read(path):
@@ -126,10 +126,10 @@ def test_release_metadata_carries_the_24_table6_columns(fake_source):
     assert tuple(header) == PARTICIPANT_COLUMNS and len(header) == 24
     participants = _read(meta_out / "participants.csv")
     assert [r["participant_key"] for r in participants] == ["p001", "p002", "p003"]
-    assert [r["site"] for r in participants] == ["seoul", "incheon", "incheon"]
+    assert [r["site"] for r in participants] == ["A", "C", "C"]
     for name in C.METADATA_FILES:
         text = (meta_out / name).read_text()
-        assert "incheon_p" not in text and "seoul_p" not in text and "{site}" not in text
+        assert "C_p" not in text and "A_p" not in text and "{site}" not in text
     dictionary = _read(meta_out / "participants_dictionary.csv")
     assert [r["variable"] for r in dictionary] == list(PARTICIPANT_COLUMNS)
     assert result["quality_rule_counts"]["height_outside_120_210_flagged_unchanged"] == 1
@@ -159,6 +159,6 @@ def test_availability_and_folds_are_rekeyed(fake_source):
 
 
 def test_metadata_with_unmapped_participant_is_rejected(fake_source):
-    partial = {k: v for k, v in MAPPING.items() if k != "seoul_p903"}
+    partial = {k: v for k, v in MAPPING.items() if k != "A_p903"}
     with pytest.raises(ValueError):
         _build_metadata(fake_source, partial)

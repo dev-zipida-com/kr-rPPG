@@ -4,7 +4,8 @@ Checks: Figure 2 layout (only pNNN/T0x folders + metadata/, exactly 6 files per
 session, no hidden/partial/symlinked entries, no site or group names), metadata
 consistency (contiguous p001..pNNN keys shared by all four CSVs, release flags match
 the folders), the 24-column participants.csv schema of manuscript Table 6 (exact columns and
-order; site, sex and the 0/1 flags only their allowed values; in the numeric columns only multiples
+order; site (the letters A / B / C since 1.5.0), sex and the 0/1 flags only their allowed values; in the
+numeric columns only multiples
 of the column's step written with its decimals - whole numbers for age and other_comorbidity_count -
 within PLAUSIBLE_RANGES, sanity limits for unit or column mix-ups, not data-quality rules: since
 1.4.0 the builder blanks no value; bmi equal to released_bmi of the row's height and weight) and
@@ -60,7 +61,7 @@ from .session_files import (
 )
 from .video import VideoError, VideoSummary, bfdt_frames_sha256, inspect_release_video
 
-OLD_KEY_RE = re.compile(r"(?:incheon|saintvincent|seoul)_p\d{3}")
+OLD_KEY_RE = re.compile(r"(?<![A-Za-z0-9])(?:" + "|".join(map(re.escape, C.SITES)) + r")_p\d{3}")  # site_pNNN keys
 DATE_RE = re.compile(r"(?<!\d)(?:19|20)\d{2}-\d{2}-\d{2}(?!\d)")
 EPOCH_RE = re.compile(r"(?<![\d.])1\d{9}(?:\.\d+)?(?!\d)")
 PLAIN_NUMBER = re.compile(r"^\d+(\.\d+)?$")
@@ -173,8 +174,10 @@ def _check_participants(participants, dictionary, report: VerifyReport) -> None:
             report.errors.append(f"{C.DICTIONARY_CSV}: variables do not match {C.PARTICIPANTS_CSV} columns")
         return
     _check_dictionary(rows, dictionary, report)
+    # Release IDs that run through the sites one block at a time (in any site order) mean a site-ordered numbering.
     sites = [row[header.index("site")] for row in sorted(rows)]
-    if len(set(sites)) > 1 and sites == sorted(sites):
+    blocks = 1 + sum(1 for before, after in zip(sites, sites[1:]) if before != after)
+    if len(set(sites)) > 1 and blocks == len(set(sites)):
         report.warnings.append(f"{C.PARTICIPANTS_CSV}: release IDs follow site order (not a random numbering)")
     for column, labels in PARTICIPANT_CATEGORIES.items():  # categorical columns only
         index = header.index(column)

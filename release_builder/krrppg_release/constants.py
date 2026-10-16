@@ -11,8 +11,8 @@ FRAME_SIZE = (640, 480)  # (width, height) of released videos
 FPS = 30.0
 
 TASKS = ("T00", "T01", "T02", "T03")
-SITES = ("incheon", "saintvincent", "seoul")
-# The custodian source tree is <site>/<group>/pNNN/T0x/. Group folders are recruitment sub-folders named
+SITES = ("A", "B", "C")  # collection sites, by letter (= clinical.SITE_PREFIX values)
+# The custodian source tree is <site>/<group>/pNNN/T0x/ with one folder per site letter. Group folders are recruitment sub-folders named
 # "NN-<label>"; any folder matching this pattern is indexed (their names are never released).
 SOURCE_GROUP_PATTERN = r"^\d{2}-[A-Za-z][A-Za-z0-9_-]*$"
 

@@ -19,6 +19,8 @@ from krrppg_release.clinical import (
     PARTICIPANT_COLUMNS,
     PLAUSIBLE_RANGES,
     SBP_MIN_PLAUSIBLE,
+    SITE_PREFIX,
+    SITES,
     Coding,
     CrfSources,
     apply_quality_rules,
@@ -31,7 +33,7 @@ from krrppg_release.clinical import (
     released_bmi,
 )
 
-MAPPING = {"incheon_p901": "p002", "incheon_p902": "p003", "seoul_p903": "p001"}
+MAPPING = {"C_p901": "p002", "C_p902": "p003", "A_p903": "p001"}
 # Manuscript Table 6: names and order of the 24 participants.csv columns.
 TABLE6 = (
     "participant_key", "site", "age", "sex", "height", "weight", "bmi", "makeup", "glasses", "accessories",
@@ -47,7 +49,7 @@ GROUPS = {
 }
 # 1.4.0: every column is coded as manuscript Table 6 says. Text and 0/1 columns keep their values ...
 TABLE6_CATEGORIES = {
-    "site": ("incheon", "saintvincent", "seoul"), "sex": ("M", "F"),
+    "site": ("A", "B", "C"), "sex": ("M", "F"),
     "makeup": ("0", "1"), "glasses": ("0", "1"), "accessories": ("0", "1"),
     "dm": ("0", "1"), "htn": ("0", "1"), "dyslipidemia": ("0", "1"), "ild": ("0", "1"),
 }
@@ -67,7 +69,7 @@ TABLE6_NUMBERS = {
 # '{observed}' is the observed range of the count.
 TABLE6_TEXT = {
     "participant_key": ("Pseudonymized participant identifier (pNNN; e.g., p001)", "-"),
-    "site": ("Collection site (seoul / incheon / saintvincent)", "-"),
+    "site": ("Collection site (A / B / C)", "-"),
     "age": ("Age at enrollment", "years"),
     "sex": ("Biological sex", "M/F"),
     "height": ("Body height", "cm, rounded to 5"),
@@ -91,7 +93,7 @@ TABLE6_TEXT = {
     "dm": ("Diabetes mellitus", "0/1"),
     "htn": ("Hypertension", "0/1"),
     "dyslipidemia": ("Dyslipidemia", "0/1"),
-    "ild": ("Interstitial lung disease (incheon site only; blank = not ascertained)", "0/1"),
+    "ild": ("Interstitial lung disease (site C only; blank = not ascertained)", "0/1"),
     "other_comorbidity_count": (("Number of positive indicators among cardiovascular disease, cerebrovascular "
                                  "disease, cancer, renal disease, and lung disease; renal disease is also counted "
                                  "when eGFR is below 15 mL/min/1.73 m^2"), "0-5 possible{observed}"),
@@ -115,7 +117,7 @@ CATEGORY_WORDING = ("band", "bins", "class", "cut-point", "top-coded", ">=", "<"
 # The synthetic CRF of conftest.py (seeded generator), keyed by screening number, and the CRF item behind each
 # numeric column; used to recompute the expected cells independently of the package.
 SYNTHETIC_CRF = {row[0]: dict(zip(CRF_COLUMNS, row)) for row in CRF_ROWS}
-SCREENING = {"incheon_p901": "04-S901", "incheon_p902": "04-S902", "seoul_p903": "01-S903"}
+SCREENING = {"C_p901": "04-S901", "C_p902": "04-S902", "A_p903": "01-S903"}
 CRF_ITEM = {"height": "Height", "weight": "Weight", "sbp": "SBP", "dbp": "DBP", "hr_rest": "HR", "hba1c": "HbA1c",
             "fpg": "FPG", "creatinine": "Creatinine", "gfr": "GFR(CKD-EPI)", "ast": "AST", "alt": "ALT"}
 
@@ -224,24 +226,24 @@ def test_rows_follow_the_table6_coding(fake_source):
     assert list(rows) == ["p001", "p002", "p003"]  # sorted by release ID
     # The synthetic CRF rows are drawn inside the ranges of conftest.CRF_SPECS; the numbers are recomputed from the
     # synthetic values (_expected_numbers), independently of the package's rounding code.
-    # incheon_p901: everything recorded; CRF eGFR agrees with CKD-EPI(creatinine); no other comorbidity
+    # C_p901: everything recorded; CRF eGFR agrees with CKD-EPI(creatinine); no other comorbidity
     assert rows["p002"] == {
-        "participant_key": "p002", "site": "incheon", "sex": "F", "makeup": "1", "glasses": "0", "accessories": "1",
+        "participant_key": "p002", "site": "C", "sex": "F", "makeup": "1", "glasses": "0", "accessories": "1",
         "dm": "0", "htn": "1", "dyslipidemia": "0", "ild": "0", "other_comorbidity_count": "0",
-        **_expected_numbers("incheon_p901"),
+        **_expected_numbers("C_p901"),
     }
-    # seoul_p903: height above 210 cm, CRF BMI below 13 and DBP above SBP are released as recorded (counted only);
-    # CRF eGFR < 15 (agrees with creatinine) counts as renal disease; ild is not ascertained outside incheon
+    # A_p903: height above 210 cm, CRF BMI below 13 and DBP above SBP are released as recorded (counted only);
+    # CRF eGFR < 15 (agrees with creatinine) counts as renal disease; ild is not ascertained outside site C
     assert rows["p001"] == {
-        "participant_key": "p001", "site": "seoul", "sex": "F", "makeup": "0", "glasses": "1", "accessories": "0",
+        "participant_key": "p001", "site": "A", "sex": "F", "makeup": "0", "glasses": "1", "accessories": "0",
         "dm": "0", "htn": "1", "dyslipidemia": "0", "ild": "", "other_comorbidity_count": "1",
-        **_expected_numbers("seoul_p903"),
+        **_expected_numbers("A_p903"),
     }
-    # incheon_p902: FPG 'ND' (missing); CRF eGFR '-' -> computed from creatinine; cerebrovascular disease and cancer
+    # C_p902: FPG 'ND' (missing); CRF eGFR '-' -> computed from creatinine; cerebrovascular disease and cancer
     assert rows["p003"] == {
-        "participant_key": "p003", "site": "incheon", "sex": "M", "makeup": "1", "glasses": "1", "accessories": "1",
+        "participant_key": "p003", "site": "C", "sex": "M", "makeup": "1", "glasses": "1", "accessories": "1",
         "dm": "1", "htn": "0", "dyslipidemia": "1", "ild": "1", "other_comorbidity_count": "2",
-        **_expected_numbers("incheon_p902"),
+        **_expected_numbers("C_p902"),
     }
     assert int(rows["p001"]["height"]) > 210 and Decimal(rows["p001"]["dbp"]) > Decimal(rows["p001"]["sbp"])
     blank = {key: [c for c in NUMERIC_COLUMNS if row[c] == ""] for key, row in rows.items()}
@@ -270,7 +272,7 @@ CODED = [
     ("weight", 71, "72"), ("weight", 73, "72"), ("weight", 70.9, "70"), ("weight", 58, "58"), ("weight", 25, "24"),
     # an already rounded BMI is written with one decimal (the coding is idempotent on released_bmi values)
     ("bmi", 24.2, "24.2"), ("bmi", 25.0, "25.0"), ("bmi", 98.0, "98.0"),
-    ("makeup", 0.0, "0"), ("makeup", 1.0, "1"), ("site", "seoul", "seoul"), ("sex", "F", "F"),
+    ("makeup", 0.0, "0"), ("makeup", 1.0, "1"), ("site", "A", "A"), ("site", "C", "C"), ("sex", "F", "F"),
 ]
 
 
@@ -359,7 +361,7 @@ def test_bmi_is_computed_from_the_rounded_height_and_weight():
     (25, 170, "8.3"),      # weight 25 -> 24 kg (half to even)
 ])
 def test_bmi_cells(fake_source, weight, height, bmi):
-    rows, _ = _rows_with(fake_source, incheon_p901={"weight": weight, "height": height})
+    rows, _ = _rows_with(fake_source, C_p901={"weight": weight, "height": height})
     assert rows["p002"]["bmi"] == bmi
 
 
@@ -393,6 +395,16 @@ def test_codings_reject_inconsistent_definitions_and_unknown_text():
         Coding("x", "integer", step="1", decimals=1)
     with pytest.raises(ValueError):
         CODINGS["site"].code("busan")
+    with pytest.raises(ValueError):
+        CODINGS["site"].code("D")  # only the three site letters
+
+
+def test_sites_are_letters_from_the_screening_prefix():
+    # 1.5.0: the CRF screening-number prefix maps straight to the released site letter
+    assert SITE_PREFIX == {"01": "A", "03": "B", "04": "C"}
+    assert CODINGS["site"].categories == SITES == tuple(sorted(SITE_PREFIX.values()))
+    assert DICTIONARY["site"][1] == "Collection site (A / B / C)"
+    assert DICTIONARY["ild"][1] == "Interstitial lung disease (site C only; blank = not ascertained)"
 
 
 def test_dictionary_is_the_table6_text(fake_source):
@@ -444,14 +456,14 @@ def test_quality_rule_counts(fake_source):
     assert list(counts) == QUALITY_COUNT_KEYS
     assert not any(key.endswith("_set_missing") for key in counts)  # 1.4.0: no rule blanks a value
     assert counts == {
-        "height_outside_120_210_flagged_unchanged": 1,  # seoul_p903, above 210 cm
-        "bmi_outside_13_60_flagged_unchanged": 1,  # seoul_p903 (CRF height and weight, not the rounded ones)
+        "height_outside_120_210_flagged_unchanged": 1,  # A_p903, above 210 cm
+        "bmi_outside_13_60_flagged_unchanged": 1,  # A_p903 (CRF height and weight, not the rounded ones)
         "sbp_below_70_flagged_unchanged": 0,
-        "dbp_not_below_sbp_flagged_unchanged": 1,  # seoul_p903
+        "dbp_not_below_sbp_flagged_unchanged": 1,  # A_p903
         "egfr_creatinine_discordant_flagged_unchanged": 0,
-        "egfr_computed_from_creatinine": 1,  # incheon_p902
+        "egfr_computed_from_creatinine": 1,  # C_p902
         "ast_isolated_extreme_flagged_unchanged": 0,
-        "renal_disease_recoded_from_egfr_below_15": 1,  # seoul_p903
+        "renal_disease_recoded_from_egfr_below_15": 1,  # A_p903
         "fpg_below_40_flagged_unchanged": 0,
         "hr_outside_30_200_flagged_unchanged": 0,
     }
@@ -459,8 +471,8 @@ def test_quality_rule_counts(fake_source):
 
 def test_fpg_below_40_is_kept_and_counted(fake_source):
     raw = load_raw(_crf(fake_source), list(MAPPING))
-    raw.loc["incheon_p901", "fpg"] = 12
-    raw.loc["seoul_p903", "fpg"] = 40  # the threshold itself is not flagged
+    raw.loc["C_p901", "fpg"] = 12
+    raw.loc["A_p903", "fpg"] = 40  # the threshold itself is not flagged
     data, counts = apply_quality_rules(raw)
     assert counts["fpg_below_40_flagged_unchanged"] == 1 and "fpg_below_40_set_missing" not in counts
     rows = derive_rows(data, MAPPING)
@@ -468,10 +480,10 @@ def test_fpg_below_40_is_kept_and_counted(fake_source):
     assert (by_id["p002"]["fpg"], by_id["p001"]["fpg"]) == ("10", "40")  # rounded, not blanked
     fpg = {row[0]: row for row in participants_dictionary(rows)}["fpg"]
     assert fpg[4] == "2"  # p003 has no FPG; p002 keeps its value
-    assert raw.loc["incheon_p901", "fpg"] == 12  # the raw frame is not modified
+    assert raw.loc["C_p901", "fpg"] == 12  # the raw frame is not modified
 
 
-# Since 1.4.0 the values the 1.3.0 rules removed are released. Per former rule: CRF edits for incheon_p901 (release
+# Since 1.4.0 the values the 1.3.0 rules removed are released. Per former rule: CRF edits for C_p901 (release
 # ID p002), the cells it now gets, and the count that records the hit (no other count changes).
 FORMER_BLANKING_RULES = [
     ({"height": 230.0, "weight": 70.0}, {"height": "230", "bmi": "13.2"}, "height_outside_120_210_flagged_unchanged"),
@@ -491,18 +503,18 @@ def test_former_blanking_rules_only_count(fake_source, edits, cells, key):
     raw = load_raw(_crf(fake_source), list(MAPPING))
     _, baseline = apply_quality_rules(raw)
     for column, value in edits.items():
-        raw.loc["incheon_p901", column] = value
+        raw.loc["C_p901", column] = value
     data, counts = apply_quality_rules(raw)
     row = _by_id(derive_rows(data, MAPPING))["p002"]
     assert {column: row[column] for column in cells} == cells
     assert counts == {**baseline, key: baseline[key] + 1}
-    assert all(raw.loc["incheon_p901", column] == value for column, value in edits.items())
+    assert all(raw.loc["C_p901", column] == value for column, value in edits.items())
 
 
 def test_no_rule_blanks_a_recorded_value(fake_source):
     """A released cell is blank only when the CRF value is missing (gfr: also when it cannot be computed)."""
     raw = load_raw(_crf(fake_source), list(MAPPING))
-    raw.loc["incheon_p901", ["height", "sbp", "dbp", "egfr", "ast", "alt", "fpg"]] = [100, 60, 65, 10, 900, 30, 5]
+    raw.loc["C_p901", ["height", "sbp", "dbp", "egfr", "ast", "alt", "fpg"]] = [100, 60, 65, 10, 900, 30, 5]
     data, _ = apply_quality_rules(raw)
     rows = _by_id(derive_rows(data, MAPPING))
     for key, release_id in MAPPING.items():
@@ -518,14 +530,14 @@ def test_no_rule_blanks_a_recorded_value(fake_source):
 
 def test_egfr_is_still_computed_from_creatinine(fake_source):
     """Kept: CRF eGFR missing and creatinine present -> CKD-EPI 2009 (information added, not removed)."""
-    crf = SYNTHETIC_CRF[SCREENING["incheon_p902"]]
+    crf = SYNTHETIC_CRF[SCREENING["C_p902"]]
     expected = reference_ckd_epi_2009(crf["Creatinine"], crf["Age"], crf["Sex"] == FEMALE)
     raw = load_raw(_crf(fake_source), list(MAPPING))
     data, counts = apply_quality_rules(raw)
     assert counts["egfr_computed_from_creatinine"] == 1
-    assert math.isclose(data.loc["incheon_p902", "egfr"], expected, rel_tol=1e-9)
+    assert math.isclose(data.loc["C_p902", "egfr"], expected, rel_tol=1e-9)
     assert _by_id(derive_rows(data, MAPPING))["p003"]["gfr"] == _reference_cell(expected, "5", 0)
-    raw.loc["incheon_p902", "creatinine"] = np.nan  # nothing to compute from: gfr stays blank
+    raw.loc["C_p902", "creatinine"] = np.nan  # nothing to compute from: gfr stays blank
     data, counts = apply_quality_rules(raw)
     assert counts["egfr_computed_from_creatinine"] == 0
     assert _by_id(derive_rows(data, MAPPING))["p003"]["gfr"] == ""
@@ -537,33 +549,33 @@ def test_egfr_below_15_still_counts_as_renal_disease(fake_source):
     data, counts = apply_quality_rules(raw)
     assert counts["renal_disease_recoded_from_egfr_below_15"] == 1
     assert _by_id(derive_rows(data, MAPPING))["p001"]["other_comorbidity_count"] == "1"  # only via eGFR < 15
-    raw.loc["incheon_p901", "egfr"] = 10.0  # far from CKD-EPI(creatinine): discordant, kept, and below 15
+    raw.loc["C_p901", "egfr"] = 10.0  # far from CKD-EPI(creatinine): discordant, kept, and below 15
     data, counts = apply_quality_rules(raw)
     assert counts["renal_disease_recoded_from_egfr_below_15"] == 2
     assert counts["egfr_creatinine_discordant_flagged_unchanged"] == 1
     rows = _by_id(derive_rows(data, MAPPING))
     assert (rows["p002"]["gfr"], rows["p002"]["other_comorbidity_count"]) == ("10", "1")
-    raw.loc["seoul_p903", "egfr"] = 15.0  # the threshold itself is not kidney failure
+    raw.loc["A_p903", "egfr"] = 15.0  # the threshold itself is not kidney failure
     data, counts = apply_quality_rules(raw)
     assert counts["renal_disease_recoded_from_egfr_below_15"] == 1
     assert _by_id(derive_rows(data, MAPPING))["p001"]["other_comorbidity_count"] == "0"
 
 
 def test_renal_disease_already_recorded_is_not_counted_twice(fake_source):
-    rows, counts = _rows_with(fake_source, seoul_p903={"other_renal": 1.0})
+    rows, counts = _rows_with(fake_source, A_p903={"other_renal": 1.0})
     assert counts["renal_disease_recoded_from_egfr_below_15"] == 0
     assert rows["p001"]["other_comorbidity_count"] == "1"
 
 
 def test_unknown_renal_item_with_egfr_below_15_counts_as_renal_disease(fake_source):
-    rows, counts = _rows_with(fake_source, seoul_p903={"other_renal": np.nan})
+    rows, counts = _rows_with(fake_source, A_p903={"other_renal": np.nan})
     assert counts["renal_disease_recoded_from_egfr_below_15"] == 1
     assert rows["p001"]["other_comorbidity_count"] == "1"
 
 
 def test_implausible_hr_is_counted_but_not_changed(fake_source):
     raw = load_raw(_crf(fake_source), list(MAPPING))
-    raw.loc["incheon_p901", "hr_rest"] = 220
+    raw.loc["C_p901", "hr_rest"] = 220
     data, counts = apply_quality_rules(raw)
     assert counts["hr_outside_30_200_flagged_unchanged"] == 1
     assert _by_id(derive_rows(data, MAPPING))["p002"]["hr_rest"] == "220"
@@ -571,7 +583,7 @@ def test_implausible_hr_is_counted_but_not_changed(fake_source):
 
 def test_other_comorbidity_count_is_the_number_of_positive_items(fake_source):
     """The sum of the five 0/1 items, 0-5, no top-coding."""
-    rows, _ = _rows_with(fake_source, incheon_p901={"other_cardiovascular": 1.0, "other_cancer": 1.0,
+    rows, _ = _rows_with(fake_source, C_p901={"other_cardiovascular": 1.0, "other_cancer": 1.0,
                                                     "other_lung": 1.0})
     assert rows["p002"]["other_comorbidity_count"] == "3"
     names = ["other_cardiovascular", "other_cerebrovascular", "other_cancer", "other_renal", "other_lung"]
@@ -581,14 +593,14 @@ def test_other_comorbidity_count_is_the_number_of_positive_items(fake_source):
 
 def test_other_comorbidity_count_is_blank_when_an_item_is_unknown(fake_source):
     """A sum with min_count=5: blank unless all five items are known, even when some are present."""
-    rows, _ = _rows_with(fake_source, incheon_p902={"other_lung": np.nan}, incheon_p901={"other_lung": np.nan})
+    rows, _ = _rows_with(fake_source, C_p902={"other_lung": np.nan}, C_p901={"other_lung": np.nan})
     assert rows["p003"]["other_comorbidity_count"] == ""  # two present, lung unknown
     assert rows["p002"]["other_comorbidity_count"] == ""  # four absent, one unknown
 
 
 def test_quality_rules_do_not_modify_the_raw_frame(fake_source):
     raw = load_raw(_crf(fake_source), list(MAPPING))
-    raw.loc["incheon_p901", "fpg"] = 35
+    raw.loc["C_p901", "fpg"] = 35
     before = raw.copy()
     apply_quality_rules(raw)
     pd.testing.assert_frame_equal(raw, before)
@@ -602,25 +614,25 @@ def test_crf_workbooks_are_only_read(fake_source):
 
 def test_participant_without_crf_row_is_an_error(fake_source):
     with pytest.raises(ValueError):
-        build_participant_table(_crf(fake_source), {**MAPPING, "seoul_p999": "p004"})
+        build_participant_table(_crf(fake_source), {**MAPPING, "A_p999": "p004"})
 
 
 def test_fractional_crf_age_is_an_error(fake_source):
     raw = load_raw(_crf(fake_source), list(MAPPING))
-    raw.loc["incheon_p901", "age"] = 57.5
+    raw.loc["C_p901", "age"] = 57.5
     data, _ = apply_quality_rules(raw)
     with pytest.raises(ValueError):
         derive_rows(data, MAPPING)
 
 
-def test_ild_outside_incheon_is_an_error(fake_source, tmp_path):
+def test_ild_outside_site_c_is_an_error(fake_source, tmp_path):
     bad = tmp_path / "ild_bad.xlsx"
     _write_sheet(bad, ILD_SHEET, ["Subject Screening NO", "ILD"], [["04-S901", "O"], ["01-S903", "O"]])
     with pytest.raises(ValueError):
         build_participant_table(CrfSources.for_source(fake_source["root"], ild_xlsx=bad), MAPPING)
 
 
-def test_incheon_participant_without_ild_value_is_an_error(fake_source, tmp_path):
+def test_site_c_participant_without_ild_value_is_an_error(fake_source, tmp_path):
     bad = tmp_path / "ild_missing.xlsx"
     _write_sheet(bad, ILD_SHEET, ["Subject Screening NO", "ILD"], [["04-S901", "O"], ["04-S902", "-"]])
     with pytest.raises(ValueError):

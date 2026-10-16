@@ -18,7 +18,7 @@ from krrppg_release.session_files import (
 
 
 def _session_dir(fake_source):
-    return fake_source["root"] / "incheon" / "02-groupb" / "p901" / "T00"
+    return fake_source["root"] / "C" / "02-groupb" / "p901" / "T00"
 
 
 def _parse(data):

@@ -32,11 +32,11 @@ FLOAT_ROUND_TRIP_S = 2.384185791015625e-07  # 2**-22 s: the size of a float64 ro
 
 # participant_key -> (site, group, pid, {task: released_flag})
 PARTICIPANTS = {
-    "incheon_p901": ("incheon", "02-groupb", "p901", {"T00": 1, "T01": 1}),
-    "incheon_p902": ("incheon", "01-groupa", "p902", {"T00": 1, "T01": 0}),
-    "seoul_p903": ("seoul", "01-groupa", "p903", {"T02": 1}),
+    "C_p901": ("C", "02-groupb", "p901", {"T00": 1, "T01": 1}),
+    "C_p902": ("C", "01-groupa", "p902", {"T00": 1, "T01": 0}),
+    "A_p903": ("A", "01-groupa", "p903", {"T02": 1}),
 }
-UNRELEASED_DIR = ("seoul", "01-groupa", "p907")
+UNRELEASED_DIR = ("A", "01-groupa", "p907")
 
 
 def _write_csv(path, header, rows, newline="\n"):
@@ -94,7 +94,7 @@ def make_metadata(meta_dir):
         meta_dir / "participants_dictionary.csv",
         ["variable", "variable_group", "description", "unit_or_coding", "availability_n_of_296"],
         [
-            ["participant_key", "Demographics", "Pseudonymized participant identifier ({site}_pNNN; e.g., incheon_p902)", "-", "3"],
+            ["participant_key", "Demographics", "Pseudonymized participant identifier ({site}_pNNN; e.g., C_p902)", "-", "3"],
             ["site", "Demographics", "Collection site", "-", "3"],
             ["age", "Demographics", "Age at enrollment", "years", "3"],
             ["sex", "Demographics", "Biological sex", "M/F", "3"],
@@ -134,24 +134,24 @@ def _flags(makeup, glasses, accessories, dm, htn, dyslipidemia, cardio, cerebro,
 # [lo, hi]; anything else is written as is. Every draw consumes one random number, and each row trips exactly the
 # data-quality checks named in its comment (since 1.4.0 the checks only count; no value is removed).
 CRF_SPECS = [
-    # incheon_p901: everything recorded; CRF eGFR within 3 of CKD-EPI (kept); other comorbidities all absent
+    # C_p901: everything recorded; CRF eGFR within 3 of CKD-EPI (kept); other comorbidities all absent
     {"Subject Screening NO": "04-S901", "Age": ("years", 50.5, 59.5), "Sex": FEMALE, "Height": (162, 166),
      "Weight": (71, 76), "SBP": (131, 138), "DBP": (81, 88), "HR": (62, 95), "HbA1c": (5.2, 6.3),
      "FPG": (101, 124), "Creatinine": (0.80, 0.90), "GFR(CKD-EPI)": ("ckd-epi", -3, 3), "AST": (15, 38),
      "ALT": (41.5, 60), **_flags(1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0)},
-    # incheon_p902: CRF eGFR missing ('-') -> computed from creatinine; FPG 'ND'; BMI < 18.5 (not a check);
+    # C_p902: CRF eGFR missing ('-') -> computed from creatinine; FPG 'ND'; BMI < 18.5 (not a check);
     # cerebrovascular disease and cancer present (count 2)
     {"Subject Screening NO": "04-S902", "Age": ("years", 74, 78.5), "Sex": MALE, "Height": (174, 178),
      "Weight": (51, 55), "SBP": (161, 175), "DBP": (91, 98), "HR": (101, 115), "HbA1c": (8.2, 9.4),
      "FPG": "ND", "Creatinine": (1.20, 1.35), "GFR(CKD-EPI)": "-", "AST": (42, 55), "ALT": (18, 35),
      **_flags(1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0)},
-    # seoul_p903: height > 210 cm and CRF BMI < 13 (both counted, values kept); DBP above SBP (counted, kept);
-    # CRF eGFR < 15 and consistent with creatinine (counted as renal disease); ILD not ascertained outside incheon
+    # A_p903: height > 210 cm and CRF BMI < 13 (both counted, values kept); DBP above SBP (counted, kept);
+    # CRF eGFR < 15 and consistent with creatinine (counted as renal disease); ILD not ascertained outside site C
     {"Subject Screening NO": "01-S903", "Age": ("years", 80.5, 88), "Sex": FEMALE, "Height": (212.5, 225),
      "Weight": (50, 58), "SBP": (100, 115), "DBP": ("above", "SBP", 1, 12), "HR": (50, 58), "HbA1c": (6.55, 6.85),
      "FPG": (130, 160), "Creatinine": (3.6, 4.8), "GFR(CKD-EPI)": ("ckd-epi", -1, 1), "AST": (20, 35),
      "ALT": (12, 30), **_flags(0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0)},
-    # seoul_p907: in the CRF but never released
+    # A_p907: in the CRF but never released
     {"Subject Screening NO": "01-S907", "Age": ("years", 61, 68), "Sex": MALE, "Height": (166, 174),
      "Weight": (63, 69), "SBP": (121, 128), "DBP": (72, 79), "HR": (65, 85), "HbA1c": (5.5, 6.2),
      "FPG": (90, 99), "Creatinine": (0.95, 1.10), "GFR(CKD-EPI)": ("ckd-epi", -4, 4), "AST": (18, 30),
