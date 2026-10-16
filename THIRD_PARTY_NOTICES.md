@@ -20,7 +20,7 @@
 
 | Dataset | Terms (check the current terms with the owners) |
 |---|---|
-| KR-rPPG | Data use agreement (DUA); controlled-access repository (link, DOI and access procedure to be added on publication) |
+| KR-rPPG | CC BY-NC 4.0, with responsible-use conditions that protect the participants (no re-identification, no linkage, no contact, no face images in publications); download from the KR-rPPG dataset record (DOI in the data descriptor) |
 | PURE | Research use; request from TU Ilmenau |
 | UBFC-rPPG | Research use; see the dataset site |
 | MMPD | Academic use only, signed release agreement; commercial use banned |

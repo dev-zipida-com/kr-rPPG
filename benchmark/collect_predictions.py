@@ -11,7 +11,7 @@ detrend lambda=100, 1st-order Butterworth 0.6-3.3 Hz, periodogram peak over the 
 same numbers the toolbox prints as "FFT MAE (FFT Label)".
 
 Output columns: family, model, fold, session, participant_key, task, pred_hr, label_hr, abs_error.
-The table is participant-level for KR-rPPG: it is written under $KR_RPPG_WORK (DUA-controlled storage),
+The table is participant-level for KR-rPPG: it is written under $KR_RPPG_WORK (keep it on access-controlled storage),
 never inside this repository. Only load pickles you produced yourself (pickle can execute code).
 """
 

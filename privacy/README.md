@@ -9,5 +9,6 @@ uses a fast path for that setting; its tests check it against this reference.
 
 The privacy evaluation of the manuscript (Table 9, closed-set ArcFace re-identification) is described in the
 paper. It needs the original, untransformed videos, so it cannot be reproduced with the released data, and its
-code is not part of this repository. The protection of the released data relies on the BFDT transform together
-with controlled access under the data use agreement (DUA).
+code is not part of this repository. The released data are de-identified by the BFDT transform but are not
+anonymous; they are licensed under CC BY-NC 4.0 with responsible-use conditions that ask users not to attempt
+re-identification (see the dataset record's `LICENSE.md`).

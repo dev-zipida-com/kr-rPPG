@@ -17,7 +17,8 @@ coded as manuscript Table 6 describes them (since 1.4.0; the categories of 1.2.x
 
 site, sex and the 0/1 flags are the only categorical columns; the other columns are numbers (age in whole years,
 the rest rounded to a fixed step), so they can hold rare values, and combinations of columns are not k-anonymous.
-The residual risk is managed under the data use agreement (DUA). There is no top or bottom coding. Everything is
+The release is distributed openly (CC BY-NC 4.0), so the residual risk is addressed only by the responsible-use
+conditions published with it. There is no top or bottom coding. Everything is
 computed from the raw CRF values (not from the rounded <source_root>/metadata/participants.csv). No data-quality
 check removes a value: values the 1.3.0 rules blanked are released as recorded in the CRF and the check hits are
 only counted; the two in-memory corrections that add information are kept (eGFR computed with CKD-EPI 2009 from

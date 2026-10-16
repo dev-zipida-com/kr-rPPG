@@ -1,6 +1,7 @@
 """Public-repository checks: no trained KR-rPPG weights are listed or offered (the manifest holds only the
-official rPPG-Toolbox weights, linked with sha256), and the reader-facing documents carry no TODO markers and no
-instructions to download weights from GitHub."""
+official rPPG-Toolbox weights, linked with sha256), the reader-facing documents carry no TODO markers and no
+instructions to download weights from GitHub, and the dataset is described as licensed under CC BY-NC 4.0, with none
+of the earlier access-procedure wording left."""
 
 import csv
 import re
@@ -18,6 +19,14 @@ DOCS = ("README.md", "CITATION.cff", "LICENSES.md", "THIRD_PARTY_NOTICES.md", "c
 WEIGHT_OFFERS = (r"\bon request\b", r"available under the dua",
                  r"dua[- ]approved", r"\bdua recipients\b", r"fold weights", r"weights \(dua\)",
                  r"trained weights are available", r"obtained the weights")
+# The KR-rPPG dataset is licensed under CC BY-NC 4.0 (open download); the earlier access-procedure wording must not
+# come back in the documents or in the code that describes the release.
+DATASET_LICENCE = "CC BY-NC 4.0"
+STALE_ACCESS = (r"\bdua\b", r"data use agreement", r"controlled[- ]access", r"request access",
+                r"approved (users|researchers)")
+CODE_FILES = ("release_builder/krrppg_release/__init__.py", "release_builder/krrppg_release/clinical.py",
+              "release_builder/krrppg_release/constants.py", "benchmark/collect_predictions.py",
+              "third_party/rPPG-Toolbox/dataset/data_loader/KoreanrPPGLoader.py")
 
 
 def _manifest():
@@ -72,3 +81,21 @@ def test_documents_do_not_offer_kr_rppg_trained_weights(doc):
     text = " ".join((REPO / doc).read_text(encoding="utf-8").lower().split())
     found = [pattern for pattern in WEIGHT_OFFERS if re.search(pattern, text)]
     assert not found, found
+
+
+@pytest.mark.parametrize("doc", DOCS + CODE_FILES)
+def test_no_controlled_access_wording_for_the_dataset(doc):
+    text = " ".join((REPO / doc).read_text(encoding="utf-8").lower().split())
+    found = [pattern for pattern in STALE_ACCESS if re.search(pattern, text)]
+    assert not found, found
+
+
+@pytest.mark.parametrize("doc", ("README.md", "LICENSES.md", "THIRD_PARTY_NOTICES.md"))
+def test_dataset_licence_is_stated(doc):
+    assert DATASET_LICENCE in (REPO / doc).read_text(encoding="utf-8")
+
+
+def test_citation_cff_keeps_mit_for_code_and_cc_by_nc_for_the_dataset():
+    cff = (REPO / "CITATION.cff").read_text(encoding="utf-8")
+    assert re.search(r"^license: MIT$", cff, flags=re.MULTILINE)
+    assert re.search(r"^    license: CC-BY-NC-4\.0$", cff, flags=re.MULTILINE)

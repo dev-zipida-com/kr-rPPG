@@ -31,8 +31,8 @@ code, or of any derivative work, by you or by third parties under your control t
 KR-rPPG is a clinical dataset (older outpatients; demographic, clinical and comorbidity metadata).
 Using this code, or models trained with it, to infer age, diabetes or any other health/medical
 condition, or to make insurance or unsupervised diagnostic decisions, is **not permitted** under the
-licence of this folder, independently of the KR-rPPG data use agreement. Heart-rate estimation for
-research benchmarking, as done in the manuscript, is the intended use.
+licence of this folder, independently of the licence of the KR-rPPG dataset (CC BY-NC 4.0).
+Heart-rate estimation for research benchmarking, as done in the manuscript, is the intended use.
 
 Model weights trained with this code, including any model you train with the KR-rPPG configs, may be
 derivative works in the sense of the licence; if you share such weights, pass the Section 3.2 restrictions on

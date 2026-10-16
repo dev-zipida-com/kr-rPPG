@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this code, please cite the KR-rPPG data descriptor and dataset (DOIs to be added on publication). The code in third_party/rPPG-Toolbox is under the Responsible AI Source Code License v1.1, not MIT (use restrictions apply); see LICENSES.md."
+message: "If you use this code, please cite the KR-rPPG data descriptor and dataset (DOIs to be added on publication). The code in third_party/rPPG-Toolbox is under the Responsible AI Source Code License v1.1, not MIT (use restrictions apply); see LICENSES.md. The KR-rPPG dataset is not part of this repository and is licensed separately under CC BY-NC 4.0."
 title: "KR-rPPG: release builder and benchmark code"
 type: software
 license: MIT
@@ -20,7 +20,8 @@ references:
       - family-names: "Choi"
         given-names: "J."
     year: 2026
-    notes: "Controlled access under a data use agreement (DUA); repository and DOI to be added on publication"
+    license: CC-BY-NC-4.0
+    notes: "DOI to be added on publication"
   - type: conference-paper
     title: "rPPG-Toolbox: Deep Remote PPG Toolbox"
     authors:

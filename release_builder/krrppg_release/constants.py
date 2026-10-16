@@ -62,8 +62,8 @@ SESSION_OUTPUT_VERSION = "1.1.0"
 # verify warns about any category of a categorical participants.csv column (site, sex, the 0/1 flags) held by
 # fewer participants than this. The numeric columns of the manuscript Table 6 coding (1.4.0: age, height, weight,
 # bmi, the nine measurements, other_comorbidity_count) have no categories and are not checked against it; they can
-# hold rare values, and combinations of columns are not k-anonymous. The residual risk is managed under the data
-# use agreement (DUA).
+# hold rare values, and combinations of columns are not k-anonymous. The release is distributed openly
+# (CC BY-NC 4.0); the residual risk is addressed by the responsible-use conditions published with it.
 MIN_CATEGORY_COUNT = 5
 
 PARTICIPANT_KEY = "participant_key"

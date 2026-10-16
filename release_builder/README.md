@@ -1,7 +1,7 @@
 # krrppg_release: build and verify the KR-rPPG de-identified release
 
-`krrppg_release` turns the custodian's source recordings into the KR-rPPG release (controlled access under
-the DUA; manuscript Figure 2 / Table 5 / Table 6) and checks a built release. MIT licence (see the repository
+`krrppg_release` turns the custodian's source recordings into the KR-rPPG release (licensed under
+CC BY-NC 4.0; manuscript Figure 2 / Table 5 / Table 6) and checks a built release. MIT licence (see the repository
 root).
 
 * **Build** (data custodian only): reads the source tree and the case report form (CRF) workbooks, never
@@ -43,7 +43,7 @@ moment earlier; on local disks it is a normal test.
 ## Usage
 
 ```bash
-# DUA users: check a downloaded release (read-only)
+# anyone with the release: check a downloaded copy (read-only)
 python -m krrppg_release verify --release-root /path/to/KR-rPPG --workers 8
 
 # custodian: build (the source and the CRF are only read)
@@ -115,8 +115,9 @@ weights and measurements are never written.
 
 **Disclosure risk.** Only the categorical columns have categories; `verify` warns about any of them held by
 fewer than 5 participants. The numeric columns, exact age in particular, can hold rare values, and
-combinations of columns are not k-anonymous. The residual re-identification risk is managed under the data
-use agreement (DUA) that governs access to the release.
+combinations of columns are not k-anonymous. The release is distributed openly under CC BY-NC 4.0, without
+access control; the responsible-use conditions published with it ask users not to attempt re-identification,
+linkage with other data or contact with participants.
 
 All values are computed from the raw CRF values (not from the rounded `<source_root>/metadata/participants.csv`).
 No data-quality check removes a value. The build report (`data_quality_rule_counts`) only counts the checks,

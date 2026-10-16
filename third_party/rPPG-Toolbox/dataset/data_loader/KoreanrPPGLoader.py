@@ -1,7 +1,7 @@
 """The data loader for the KR-rPPG dataset (BFDT release layout).
 
 KR-rPPG is a clinical rPPG dataset collected at three hospital sites in Korea. This loader reads
-the de-identified release that approved users obtain under the data use agreement (DUA):
+the de-identified release (CC BY-NC 4.0, obtained from the KR-rPPG dataset record):
 
     ${KR_RPPG_ROOT}/                     # the released "KR-rPPG/" folder
     |-- metadata/

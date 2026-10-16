@@ -1,4 +1,4 @@
-"""Builds and verifies the KR-rPPG release (BFDT FFV1 videos, p001-p296 layout; controlled access under the DUA).
+"""Builds and verifies the KR-rPPG release (BFDT FFV1 videos, p001-p296 layout; licensed under CC BY-NC 4.0).
 
 The source dataset (<source_root>) is only ever read; every write goes
 through `safety.PathPolicy`, which refuses any path inside the source tree.

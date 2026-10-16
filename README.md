@@ -22,19 +22,20 @@ This repository contains:
 > **Licences in one sentence:** our own code is MIT; everything in `third_party/rPPG-Toolbox/` keeps the
 > rPPG-Toolbox licence (RAIL v1.1), whose Section 3.2 forbids, among other things, using the code or models
 > derived from it to infer health/medical conditions or age, for insurance decisions, or to diagnose without
-> human oversight. Details: [`LICENSES.md`](LICENSES.md).
+> human oversight. Details: [`LICENSES.md`](LICENSES.md). The KR-rPPG dataset is not part of this repository;
+> it is licensed separately under CC BY-NC 4.0 (see [Data access](#data-access)).
 
 ## What can be reproduced, and by whom
 
 | Manuscript item | Code | Needs | Reproducible by |
 |---|---|---|---|
 | Release build (BFDT videos, metadata) | `release_builder/` | original recordings + CRF (custodian only) | data custodian; anyone can run `verify` on the released data and the unit tests on synthetic data |
-| Table 7 (stationary HR distributions) | `analysis/table7/` | KR-rPPG prediction table of the internal row (DUA) + raw PURE, MMPD, UBFC-Phys | DUA users (the PURE / MMPD / UBFC-Phys rows: anyone with those datasets) |
-| Table 8, internal 5-fold row | `benchmark/` (`kr_kfold`) | KR-rPPG (DUA); fold models you train with `kr_kfold/train` | DUA users, on the released BFDT videos (numbers differ, see caveats) |
-| Table 8, KR-rPPG -> PURE / UBFC-rPPG / MMPD / UBFC-Phys | `benchmark/` (`kr_to_*`) | the fold models from the internal row + the public dataset | DUA users, with models trained on the BFDT videos (numbers differ, see caveats) |
-| Table 8, PURE / UBFC-rPPG -> KR-rPPG | `benchmark/` (`*_to_kr`) | KR-rPPG (DUA) + official rPPG-Toolbox weights | DUA users (on BFDT videos) |
-| Table 8, MMPD -> KR-rPPG | `benchmark/` (`mmpd_to_kr`) | MMPD + KR-rPPG (DUA); models retrained on MMPD | DUA users (on BFDT videos) |
-| Figure 3 | `analysis/figure3/` | out-of-fold predictions of the internal row | DUA users |
+| Table 7 (stationary HR distributions) | `analysis/table7/` | KR-rPPG prediction table of the internal row + raw PURE, MMPD, UBFC-Phys | anyone with the KR-rPPG release (the PURE / MMPD / UBFC-Phys rows: anyone with those datasets) |
+| Table 8, internal 5-fold row | `benchmark/` (`kr_kfold`) | KR-rPPG release; fold models you train with `kr_kfold/train` | anyone with the KR-rPPG release, on the released BFDT videos (numbers differ, see caveats) |
+| Table 8, KR-rPPG -> PURE / UBFC-rPPG / MMPD / UBFC-Phys | `benchmark/` (`kr_to_*`) | the fold models from the internal row + the public dataset | anyone with the KR-rPPG release, with models trained on the BFDT videos (numbers differ, see caveats) |
+| Table 8, PURE / UBFC-rPPG -> KR-rPPG | `benchmark/` (`*_to_kr`) | KR-rPPG release + official rPPG-Toolbox weights | anyone with the KR-rPPG release (on BFDT videos) |
+| Table 8, MMPD -> KR-rPPG | `benchmark/` (`mmpd_to_kr`) | MMPD + KR-rPPG release; models retrained on MMPD | anyone with MMPD and the KR-rPPG release (on BFDT videos) |
+| Figure 3 | `analysis/figure3/` | out-of-fold predictions of the internal row | anyone with the KR-rPPG release |
 | Table 9 (ArcFace re-identification) | not included | original, non-de-identified videos | data custodian only; the attack code is not part of this repository |
 
 ## Repository layout
@@ -66,9 +67,12 @@ tests/                        model smoke tests, config checks, synthetic loader
 
 ## Data access
 
-* **KR-rPPG**: the data are available to approved researchers under a data use agreement (DUA) from a
-  controlled-access repository; the link, DOI and access procedure will be added on publication. The release
-  folder `KR-rPPG/` contains
+* **KR-rPPG**: the dataset is not part of this repository. It will be openly available from
+  the KR-rPPG dataset record (DOI in the data descriptor) under the Creative Commons Attribution-NonCommercial 4.0
+  International licence ([CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)). The data are de-identified
+  but not anonymous: the record's `LICENSE.md` lists responsible-use conditions that protect the participants
+  (no re-identification, no linkage, no contact, no face images in publications). The release folder
+  `KR-rPPG/` contains
   `p001/ ... p296/` with task folders `T00`-`T03` (`video_bfdt_ffv1.avi`, `BVP_synchronized.csv`,
   `HR_synchronized.csv`, `SpO2_synchronized.csv`, `frames_timestamp.csv`, `face_bboxes.csv`) and
   `metadata/` (`participants.csv`, `participants_dictionary.csv`, `task_session_availability.csv`,
@@ -126,7 +130,7 @@ All configs use placeholders that the toolbox expands at run time (it stops if o
 | Variable | Meaning |
 |---|---|
 | `KR_RPPG_ROOT` | the released `KR-rPPG/` folder (holds `pNNN/` and `metadata/`) |
-| `KR_RPPG_WORK` | a private work folder for caches, runs, logs and per-session results (keep it on DUA-compliant storage) |
+| `KR_RPPG_WORK` | a private work folder for caches, runs, logs and per-session results (it holds participant-level results; keep it on access-controlled storage) |
 | `KR_RPPG_CHECKPOINTS` | folder for the models you train: `kr_5fold/<model>/` (step 2; used by `kr_kfold/eval` and `kr_to_*`) and `mmpd_trained/<model>/` (step 5) |
 | `RPPG_TOOLBOX_WEIGHTS` | `final_model_release/` of rPPG-Toolbox at commit `b7500b848f84ad7f86e277b4612563b69f4f88f9` |
 | `PURE_ROOT`, `UBFC_RPPG_ROOT`, `MMPD_ROOT`, `UBFC_PHYS_ROOT` | raw folders of the public datasets |
@@ -238,7 +242,7 @@ dataset tests (Welch, Mann-Whitney U, Holm) next to the manuscript values; it pr
 nothing.
 
 **7. Release build and verification** - see [`release_builder/README.md`](release_builder/README.md).
-DUA users can check a downloaded release with
+Users of the KR-rPPG release can check a downloaded copy with
 `python -m krrppg_release verify --release-root $KR_RPPG_ROOT` (run inside `release_builder/`).
 
 ## Expected results (manuscript)
@@ -266,8 +270,9 @@ MMPD 76.8 +/- 11.7 (N = 33), PURE 65.2 +/- 23.5 (N = 10), UBFC-Phys 81.7 +/- 13.
 dataset: Welch p >= 0.060 for all three, Mann-Whitney p = 0.001 for PURE (Holm-adjusted 0.003) and not
 significant after Holm for MMPD and UBFC-Phys.
 Table 9 (privacy evaluation) cannot be reproduced with this repository: the evaluation is described in the
-paper and needs the original, non-de-identified videos. The protection of the released data relies on the
-BFDT transform together with controlled access under the DUA.
+paper and needs the original, non-de-identified videos. The released videos are BFDT-transformed but not
+anonymous; the dataset is licensed under CC BY-NC 4.0 with responsible-use conditions that ask users not to
+attempt re-identification (see the dataset record's `LICENSE.md`).
 
 ### Caveats: why your numbers can differ
 
@@ -329,8 +334,8 @@ The tests use synthetic data and random weights only. The PhysFormer-loss reprod
 ```
 Data descriptor: Choi, J. et al. KR-rPPG: a clinical remote photoplethysmography dataset. (2026). DOI to be added
                  on publication.
-Dataset:         Choi, J. et al. KR-rPPG: a clinical remote photoplethysmography dataset. (2026). Controlled access
-                 under a data use agreement (DUA); repository and DOI to be added on publication.
+Dataset:         Choi, J. et al. KR-rPPG: a clinical remote photoplethysmography dataset. (2026). CC BY-NC 4.0;
+                 DOI to be added on publication.
 ```
 
 Please also cite rPPG-Toolbox (Liu, X. et al., NeurIPS 2023, https://doi.org/10.52202/075280-2995) and the
@@ -339,5 +344,5 @@ To cite this code, see [`CITATION.cff`](CITATION.cff) (repository: https://githu
 
 ## Contact
 
-Questions about the code: please open a GitHub issue in this repository. For access to the dataset, see
+Questions about the code: please open a GitHub issue in this repository. To obtain the dataset, see
 [Data access](#data-access).

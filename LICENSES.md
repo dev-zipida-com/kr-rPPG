@@ -15,7 +15,12 @@ work under RAIL v1.1, not MIT.
 ## Not covered by either licence
 
 * **The KR-rPPG dataset** (videos, physiological signals, metadata, fold assignment) is not part of this
-  repository. It is distributed separately under a data use agreement (DUA); see the README.
+  repository and is covered by neither MIT nor RAIL v1.1. It is licensed separately under the Creative Commons
+  Attribution-NonCommercial 4.0 International licence
+  ([CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/); legal code:
+  https://creativecommons.org/licenses/by-nc/4.0/legalcode), with responsible-use conditions that protect
+  the participants (stated in the dataset record's `LICENSE.md`); see [Data access](README.md#data-access)
+  in the README.
 * **Model weights** are not part of this repository. Users train the KR-rPPG models themselves with the
   provided configs. The official rPPG-Toolbox weights used for two Table 8 rows are linked, with their sha256
   in [`checkpoints/checkpoints_manifest.csv`](checkpoints/checkpoints_manifest.csv), not re-hosted.
