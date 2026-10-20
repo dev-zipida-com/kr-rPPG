@@ -1,0 +1,91 @@
+--- a/dataset/data_loader/BaseLoader.py
++++ b/dataset/data_loader/BaseLoader.py
+@@ -25,6 +25,7 @@
+     pass
+ 
+ import cv2
++cv2.setNumThreads(1)  # KR-rPPG: avoid OpenCV thread oversubscription in spawn preprocessing workers
+ import numpy as np
+ import pandas as pd
+ import torch
+@@ -66,10 +67,15 @@
+         self.do_preprocess = config_data.DO_PREPROCESS
+         self.config_data = config_data
+ 
+-        if self.do_preprocess:
+-            from dataset.data_loader.face_detector.YOLO5Face import YOLO5Face
+-            if 'Y5F' in self.config_data.PREPROCESS.CROP_FACE.BACKEND:
+-                self.Y5FObj = YOLO5Face(self.config_data.PREPROCESS.CROP_FACE.BACKEND, device)
++        if self.do_preprocess and 'Y5F' in self.config_data.PREPROCESS.CROP_FACE.BACKEND:
++            # KR-rPPG: YOLO5Face (GPL-3.0, deepcam-cn/yolov5-face) is NOT redistributed in this repository.
++            # It is imported only when the Y5F backend is requested; every KR-rPPG config uses BACKEND: HC.
++            try:
++                from dataset.data_loader.face_detector.YOLO5Face import YOLO5Face
++            except ImportError as exc:
++                raise ImportError('BACKEND Y5F needs the upstream rPPG-Toolbox face_detector package, '
++                                  'which is not shipped here (GPL-3.0). Use BACKEND: HC.') from exc
++            self.Y5FObj = YOLO5Face(self.config_data.PREPROCESS.CROP_FACE.BACKEND, device)
+ 
+         assert (config_data.BEGIN < config_data.END)
+         assert (config_data.BEGIN > 0 or config_data.BEGIN == 0)
+@@ -112,7 +118,7 @@
+         data = np.float32(data)
+         label = np.float32(label)
+         # item_path is the location of a specific clip in a preprocessing output folder
+-        # For example, an item path could be /home/data/PURE_SizeW72_...unsupervised/501_input0.npy
++        # For example, an item path could be <CACHED_PATH>/PURE_SizeW72_...unsupervised/501_input0.npy
+         item_path = self.inputs[index]
+         # item_path_filename is simply the filename of the specific clip
+         # For example, the preceding item_path's filename would be 501_input0.npy
+@@ -261,6 +267,8 @@
+             pass
+         elif config_preprocess.LABEL_TYPE == "DiffNormalized":
+             bvps = BaseLoader.diff_normalize_label(bvps)
++        elif config_preprocess.LABEL_TYPE == "DiffOnly":
++            bvps = BaseLoader.diff_only_label(bvps)
+         elif config_preprocess.LABEL_TYPE == "Standardized":
+             bvps = BaseLoader.standardized_label(bvps)
+         else:
+@@ -473,7 +481,8 @@
+             count += 1
+         return input_path_name_list, label_path_name_list
+ 
+-    def multi_process_manager(self, data_dirs, config_preprocess, multi_process_quota=8):
++    def multi_process_manager(self, data_dirs, config_preprocess,
++                              multi_process_quota=int(os.environ.get("PREPROCESS_WORKERS", "8"))):
+         """Allocate dataset preprocessing across multiple processes.
+ 
+         Args:
+@@ -510,11 +519,17 @@
+                     if not p_.is_alive():
+                         p_list.remove(p_)
+                         p_.join()
++                        if p_.exitcode != 0:  # KR-rPPG: fail loudly instead of writing a partial cache
++                            raise RuntimeError(
++                                f"Preprocessing subprocess failed with exit code {p_.exitcode}")
+                         running_num -= 1
+                         pbar.update(1)
+         # join all processes
+         for p_ in p_list:
+             p_.join()
++            if p_.exitcode != 0:
++                raise RuntimeError(
++                    f"Preprocessing subprocess failed with exit code {p_.exitcode}")
+             pbar.update(1)
+         pbar.close()
+ 
+@@ -621,6 +636,14 @@
+         return diffnormalized_label
+ 
+     @staticmethod
++    def diff_only_label(label):
++        """Calculate discrete difference in labels along the time-axis without normalization."""
++        diff_label = np.diff(label, axis=0)
++        diff_label = np.append(diff_label, np.zeros(1), axis=0)
++        diff_label[np.isnan(diff_label)] = 0
++        return diff_label
++
++    @staticmethod
+     def standardized_data(data):
+         """Z-score standardization for video data."""
+         data = data - np.mean(data)

@@ -1,0 +1,212 @@
+{
+ "description": "Outputs of the PhysFormer DLDL loss used for the KR-rPPG manuscript runs (rPPG-Toolbox b7500b8 PhysFormerLossComputer.py with the KR-rPPG target clamp), computed on CUDA for seeded random inputs. tests/test_physformer_loss.py recreates the inputs from this recipe and checks that PhysFormerLossAdapter.dldl_losses on the fetched upstream file reproduces these numbers. Only numbers and hashes are stored here.",
+ "reference_implementation_sha256": "c5a0b595045c8a20cc130f6d9ef19dedebf43f0f5aeda85450229ba9e2c19306",
+ "upstream_sha256": "e6ce7fa579fad778c8d97b9c614ff8e0a088f467d542457f8141e7175e2aa0be",
+ "generated_with": "torch 2.2.2+cu121, numpy 1.26.4, CUDA",
+ "fs": 30.0,
+ "std": 1.0,
+ "length": 160,
+ "sine_amplitude": 2.0,
+ "probe_seed": 1234,
+ "input_recipe": "x = numpy.random.default_rng(seed).standard_normal(length); if sine_bpm: x += sine_amplitude * sin(2*pi*sine_bpm/60*t), t = arange(length)/fs; x = (x - mean)/std (numpy std), float32; loss = kl + ce; grad_probe = grad . default_rng(probe_seed).standard_normal(length) (float32)",
+ "cases": [
+  {
+   "seed": 0,
+   "sine_bpm": null,
+   "target_bpm": 25.0,
+   "input_sha256": "3feda0d1569621eae6edc01069ab431d52a761830d43bde3235693ca6b383548",
+   "kl": 2.5642192363739014,
+   "ce": 4.942709445953369,
+   "hr_bin_error": 36.0,
+   "grad_l2": 0.014820917960929275,
+   "grad_probe": 0.010044429525462355
+  },
+  {
+   "seed": 1,
+   "sine_bpm": 52.0,
+   "target_bpm": 39.5,
+   "input_sha256": "4c9ad25bafacd1901396540906e42640d1128b6c5f7e77e0cea5431514fcb3f9",
+   "kl": 2.559561014175415,
+   "ce": 4.937628746032715,
+   "hr_bin_error": 12.0,
+   "grad_l2": 0.007929453855884921,
+   "grad_probe": 0.012980737051415047
+  },
+  {
+   "seed": 2,
+   "sine_bpm": null,
+   "target_bpm": 40.0,
+   "input_sha256": "f2dd5f6138c7c22d983d83e878b6b63ec6493343c0f10880e09e33d55b525132",
+   "kl": 2.5685060024261475,
+   "ce": 4.948319435119629,
+   "hr_bin_error": 69.0,
+   "grad_l2": 0.004083341206848959,
+   "grad_probe": -0.0071390871094698174
+  },
+  {
+   "seed": 3,
+   "sine_bpm": 66.5,
+   "target_bpm": 41.7,
+   "input_sha256": "9ccfa7ceff5de777ae72f6036ff9e0a7b0463e35d2ac0d5fbb487a306f7fae3e",
+   "kl": 3.4228034019470215,
+   "ce": 4.948696613311768,
+   "hr_bin_error": 25.299999237060547,
+   "grad_l2": 0.001673441081473864,
+   "grad_probe": 0.003188569803399726
+  },
+  {
+   "seed": 4,
+   "sine_bpm": null,
+   "target_bpm": 58.2,
+   "input_sha256": "ec10bd04943eb6936507117670eec6c50a990cfcff16dbc0cffc3d3c5e49c54d",
+   "kl": 3.524613380432129,
+   "ce": 4.943504810333252,
+   "hr_bin_error": 91.80000305175781,
+   "grad_l2": 0.013505130575546732,
+   "grad_probe": 0.009040411078696985
+  },
+  {
+   "seed": 5,
+   "sine_bpm": 75.0,
+   "target_bpm": 72.3,
+   "input_sha256": "8679c5325d3eae864423e57cb378f8a9776d3b7cf6b56abee110dc2cca389000",
+   "kl": 3.4786529541015625,
+   "ce": 4.897144317626953,
+   "hr_bin_error": 2.6999969482421875,
+   "grad_l2": 0.008728638572696158,
+   "grad_probe": -0.004803781702564321
+  },
+  {
+   "seed": 6,
+   "sine_bpm": null,
+   "target_bpm": 88.8,
+   "input_sha256": "27c1d0cb17b83998b684b6ac0ad24187df56847ee05bff343e1c863c43d484c9",
+   "kl": 3.5276737213134766,
+   "ce": 4.946650981903076,
+   "hr_bin_error": 86.19999694824219,
+   "grad_l2": 0.0097719857468375,
+   "grad_probe": 0.011344716243702887
+  },
+  {
+   "seed": 7,
+   "sine_bpm": 95.5,
+   "target_bpm": 99.9,
+   "input_sha256": "7895798a402c752903bf275c2d11a471bb9b4d6afad348deb98dc6565462ff30",
+   "kl": 3.4795148372650146,
+   "ce": 4.898018836975098,
+   "hr_bin_error": 3.9000015258789062,
+   "grad_l2": 0.010661414865560572,
+   "grad_probe": -0.018961307387381034
+  },
+  {
+   "seed": 8,
+   "sine_bpm": null,
+   "target_bpm": 113.4,
+   "input_sha256": "87b0ee78f3b931e19b1642b6cd57177be5cf9659f678c9b7541eaad486096c0c",
+   "kl": 3.5285961627960205,
+   "ce": 4.947534561157227,
+   "hr_bin_error": 30.599998474121094,
+   "grad_l2": 0.009608351686580878,
+   "grad_probe": -0.015425543180500115
+  },
+  {
+   "seed": 9,
+   "sine_bpm": 120.0,
+   "target_bpm": 128.6,
+   "input_sha256": "1cbd6a3ef90ab901e8623f1a74bdeb60c38b4aa9615cfd2c026185a76c3bcae5",
+   "kl": 3.498521566390991,
+   "ce": 4.917468070983887,
+   "hr_bin_error": 8.600006103515625,
+   "grad_l2": 0.010057232854219885,
+   "grad_probe": 0.005199925791267276
+  },
+  {
+   "seed": 10,
+   "sine_bpm": null,
+   "target_bpm": 147.1,
+   "input_sha256": "2d76db9fa25362ef13630dce948e19e567c6815735c7d3f8e221a05fa480e6ac",
+   "kl": 3.51879620552063,
+   "ce": 4.937756061553955,
+   "hr_bin_error": 10.100006103515625,
+   "grad_l2": 0.031116353690664504,
+   "grad_probe": -0.03409628171306133
+  },
+  {
+   "seed": 11,
+   "sine_bpm": 150.5,
+   "target_bpm": 160.2,
+   "input_sha256": "9018b1f62f8242f114b93a7dcad08995041225e15c570480f3a80eebec812374",
+   "kl": 3.509976863861084,
+   "ce": 4.929142475128174,
+   "hr_bin_error": 10.199996948242188,
+   "grad_l2": 0.010038766167071441,
+   "grad_probe": -0.0063369518590819
+  },
+  {
+   "seed": 12,
+   "sine_bpm": null,
+   "target_bpm": 178.9,
+   "input_sha256": "b94c7cbfb0d6bc8a34d3deed3ec6624f187a8007b3cdfc9bf1af61049d5c6783",
+   "kl": 3.422166109085083,
+   "ce": 4.948066234588623,
+   "hr_bin_error": 79.89999389648438,
+   "grad_l2": 0.004768211603557816,
+   "grad_probe": 0.002356178417472563
+  },
+  {
+   "seed": 13,
+   "sine_bpm": 171.0,
+   "target_bpm": 179.0,
+   "input_sha256": "c89d3182d601b0836cc531a55bc4e8ab47f30ebc0584cd36663e4ac2f0738b5a",
+   "kl": 2.548344850540161,
+   "ce": 4.922335147857666,
+   "hr_bin_error": 9.0,
+   "grad_l2": 0.011337403591162143,
+   "grad_probe": -0.004174823772668332
+  },
+  {
+   "seed": 14,
+   "sine_bpm": null,
+   "target_bpm": 179.4,
+   "input_sha256": "db104e7332d19a7f00f966cbc96b9e701d7f43321ae4e259436b489cb21a863a",
+   "kl": 2.5658771991729736,
+   "ce": 4.944554328918457,
+   "hr_bin_error": 112.0,
+   "grad_l2": 0.014654121735810434,
+   "grad_probe": -0.013415694698543132
+  },
+  {
+   "seed": 15,
+   "sine_bpm": 60.0,
+   "target_bpm": 185.0,
+   "input_sha256": "5f307650c38c004bfc649cbcb1cb594ec05e3e2b7306773cb736470fd0d84d3e",
+   "kl": 2.568453788757324,
+   "ce": 4.948270797729492,
+   "hr_bin_error": 119.0,
+   "grad_l2": 0.002307533185763633,
+   "grad_probe": 0.0006656523074998969
+  },
+  {
+   "seed": 16,
+   "sine_bpm": null,
+   "target_bpm": 210.5,
+   "input_sha256": "bc34df055e88560f8820fe5501026dcf910c08d131b3286711eca26ba186d790",
+   "kl": 2.567080020904541,
+   "ce": 4.946475982666016,
+   "hr_bin_error": 55.0,
+   "grad_l2": 0.007251332962285024,
+   "grad_probe": 0.004327422973416654
+  },
+  {
+   "seed": 17,
+   "sine_bpm": 140.0,
+   "target_bpm": 240.0,
+   "input_sha256": "846befbfd44ed286f6308e61e1b7481daf0a1cffeaf1ce3580a62e980cbb438d",
+   "kl": 2.5685272216796875,
+   "ce": 4.948433876037598,
+   "hr_bin_error": 38.0,
+   "grad_l2": 0.0022109658433313293,
+   "grad_probe": 0.0011685972497131798
+  }
+ ]
+}

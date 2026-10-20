@@ -1,0 +1,244 @@
+{
+ "meta": {
+  "description": "Manuscript Figure 3 (and Table 8 internal row = group All): aggregates only",
+  "source": "original (pre-BFDT) videos, manuscript runs, 1,166 sessions / 296 participants",
+  "note": "bootstrap CIs depend on the participant order; with release IDs the CI bounds can differ slightly"
+ },
+ "values": {
+  "PhysNet": {
+   "T00": {
+    "n_sessions": 291,
+    "n_participants": 291,
+    "mae": 0.68,
+    "ci95_lo": 0.26,
+    "ci95_hi": 1.28,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 1.37
+   },
+   "T01": {
+    "n_sessions": 293,
+    "n_participants": 293,
+    "mae": 0.67,
+    "ci95_lo": 0.22,
+    "ci95_hi": 1.3,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 1.71
+   },
+   "T02": {
+    "n_sessions": 289,
+    "n_participants": 289,
+    "mae": 2.07,
+    "ci95_lo": 1.25,
+    "ci95_hi": 3.01,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 7.61
+   },
+   "T03": {
+    "n_sessions": 293,
+    "n_participants": 293,
+    "mae": 2.25,
+    "ci95_lo": 1.42,
+    "ci95_hi": 3.19,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 9.56
+   },
+   "All": {
+    "n_sessions": 1166,
+    "n_participants": 296,
+    "mae": 1.47,
+    "ci95_lo": 0.93,
+    "ci95_hi": 2.14,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 5.06
+   }
+  },
+  "PhysFormer": {
+   "T00": {
+    "n_sessions": 291,
+    "n_participants": 291,
+    "mae": 0.36,
+    "ci95_lo": 0.18,
+    "ci95_hi": 0.64,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 0.69
+   },
+   "T01": {
+    "n_sessions": 293,
+    "n_participants": 293,
+    "mae": 0.44,
+    "ci95_lo": 0.22,
+    "ci95_hi": 0.74,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 1.37
+   },
+   "T02": {
+    "n_sessions": 289,
+    "n_participants": 289,
+    "mae": 1.97,
+    "ci95_lo": 1.27,
+    "ci95_hi": 2.75,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 8.65
+   },
+   "T03": {
+    "n_sessions": 293,
+    "n_participants": 293,
+    "mae": 3.21,
+    "ci95_lo": 2.29,
+    "ci95_hi": 4.23,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 12.97
+   },
+   "All": {
+    "n_sessions": 1166,
+    "n_participants": 296,
+    "mae": 1.51,
+    "ci95_lo": 1.09,
+    "ci95_hi": 1.97,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 5.92
+   }
+  },
+  "DeepPhys": {
+   "T00": {
+    "n_sessions": 291,
+    "n_participants": 291,
+    "mae": 4.48,
+    "ci95_lo": 3.08,
+    "ci95_hi": 6.02,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 11.34
+   },
+   "T01": {
+    "n_sessions": 293,
+    "n_participants": 293,
+    "mae": 1.82,
+    "ci95_lo": 0.86,
+    "ci95_hi": 2.98,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 4.1
+   },
+   "T02": {
+    "n_sessions": 289,
+    "n_participants": 289,
+    "mae": 19.45,
+    "ci95_lo": 17.19,
+    "ci95_hi": 21.77,
+    "median_ae": 14.06,
+    "pct_sessions_gt5": 60.55
+   },
+   "T03": {
+    "n_sessions": 293,
+    "n_participants": 293,
+    "mae": 21.43,
+    "ci95_lo": 19.17,
+    "ci95_hi": 23.73,
+    "median_ae": 19.34,
+    "pct_sessions_gt5": 66.89
+   },
+   "All": {
+    "n_sessions": 1166,
+    "n_participants": 296,
+    "mae": 11.83,
+    "ci95_lo": 10.54,
+    "ci95_hi": 13.18,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 35.68
+   }
+  },
+  "TS-CAN": {
+   "T00": {
+    "n_sessions": 291,
+    "n_participants": 291,
+    "mae": 1.32,
+    "ci95_lo": 0.75,
+    "ci95_hi": 2.01,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 3.78
+   },
+   "T01": {
+    "n_sessions": 293,
+    "n_participants": 293,
+    "mae": 0.48,
+    "ci95_lo": 0.15,
+    "ci95_hi": 1.04,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 1.37
+   },
+   "T02": {
+    "n_sessions": 289,
+    "n_participants": 289,
+    "mae": 11.69,
+    "ci95_lo": 9.62,
+    "ci95_hi": 13.86,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 35.99
+   },
+   "T03": {
+    "n_sessions": 293,
+    "n_participants": 293,
+    "mae": 16.41,
+    "ci95_lo": 14.27,
+    "ci95_hi": 18.59,
+    "median_ae": 8.79,
+    "pct_sessions_gt5": 52.9
+   },
+   "All": {
+    "n_sessions": 1166,
+    "n_participants": 296,
+    "mae": 7.48,
+    "ci95_lo": 6.49,
+    "ci95_hi": 8.53,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 23.5
+   }
+  },
+  "EfficientPhys": {
+   "T00": {
+    "n_sessions": 291,
+    "n_participants": 291,
+    "mae": 0.7,
+    "ci95_lo": 0.31,
+    "ci95_hi": 1.28,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 1.72
+   },
+   "T01": {
+    "n_sessions": 293,
+    "n_participants": 293,
+    "mae": 0.46,
+    "ci95_lo": 0.15,
+    "ci95_hi": 1.01,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 1.02
+   },
+   "T02": {
+    "n_sessions": 289,
+    "n_participants": 289,
+    "mae": 7.86,
+    "ci95_lo": 6.08,
+    "ci95_hi": 9.84,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 23.53
+   },
+   "T03": {
+    "n_sessions": 293,
+    "n_participants": 293,
+    "mae": 10.07,
+    "ci95_lo": 8.11,
+    "ci95_hi": 12.09,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 31.4
+   },
+   "All": {
+    "n_sessions": 1166,
+    "n_participants": 296,
+    "mae": 4.81,
+    "ci95_lo": 3.89,
+    "ci95_hi": 5.79,
+    "median_ae": 0.0,
+    "pct_sessions_gt5": 14.41
+   }
+  }
+ }
+}

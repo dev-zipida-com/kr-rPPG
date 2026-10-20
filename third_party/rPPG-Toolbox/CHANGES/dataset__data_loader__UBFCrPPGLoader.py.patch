@@ -1,0 +1,11 @@
+--- a/dataset/data_loader/UBFCrPPGLoader.py
++++ b/dataset/data_loader/UBFCrPPGLoader.py
+@@ -43,7 +43,7 @@
+ 
+     def get_raw_data(self, data_path):
+         """Returns data directories under the path(For UBFC-rPPG dataset)."""
+-        data_dirs = glob.glob(data_path + os.sep + "subject*")
++        data_dirs = sorted(glob.glob(data_path + os.sep + "subject*"))
+         if not data_dirs:
+             raise ValueError(self.dataset_name + " data paths empty!")
+         dirs = [{"index": re.search(

@@ -1,0 +1,11 @@
+# conda env create -f environment/environment.yml && conda activate kr-rppg
+# Benchmark environment (see requirements-benchmark.txt for the pinned versions and their origin).
+name: kr-rppg
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10.12
+  - pip
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu121
+      - -r requirements-benchmark.txt

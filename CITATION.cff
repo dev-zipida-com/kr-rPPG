@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the KR-rPPG data descriptor and dataset (DOIs to be added on publication). The code in third_party/rPPG-Toolbox is under the Responsible AI Source Code License v1.1, not MIT (use restrictions apply); see LICENSES.md. The KR-rPPG dataset is not part of this repository and is licensed separately under CC BY-NC 4.0."
+title: "KR-rPPG: release builder and benchmark code"
+type: software
+license: MIT
+repository-code: "https://github.com/dev-zipida-com/kr-rPPG"
+authors:
+  - name: "ZIPIDA and GIST"
+references:
+  - type: article
+    title: "KR-rPPG: a clinical remote photoplethysmography dataset"
+    authors:
+      - family-names: "Choi"
+        given-names: "J."
+    year: 2026
+    notes: "DOI to be added on publication"
+  - type: dataset
+    title: "KR-rPPG: a clinical remote photoplethysmography dataset"
+    authors:
+      - family-names: "Choi"
+        given-names: "J."
+    year: 2026
+    license: CC-BY-NC-4.0
+    notes: "DOI to be added on publication"
+  - type: conference-paper
+    title: "rPPG-Toolbox: Deep Remote PPG Toolbox"
+    authors:
+      - family-names: "Liu"
+        given-names: "X."
+    year: 2023
+    collection-title: "Advances in Neural Information Processing Systems 36"
+    doi: "10.52202/075280-2995"

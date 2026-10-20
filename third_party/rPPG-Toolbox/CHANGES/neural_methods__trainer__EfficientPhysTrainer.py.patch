@@ -1,0 +1,40 @@
+--- a/neural_methods/trainer/EfficientPhysTrainer.py
++++ b/neural_methods/trainer/EfficientPhysTrainer.py
+@@ -37,6 +37,12 @@
+                 self.device)
+             self.model = torch.nn.DataParallel(self.model, device_ids=list(range(config.NUM_OF_GPU_TRAIN)))
+ 
++            # Load pretrained model for transfer learning
++            if config.TRAIN.PRETRAINED_MODEL:
++                print(f"Loading pretrained model: {config.TRAIN.PRETRAINED_MODEL}")
++                self.model.load_state_dict(torch.load(config.TRAIN.PRETRAINED_MODEL, map_location=self.device, weights_only=True))
++                print("Pretrained model loaded successfully!")
++
+             self.num_train_batches = len(data_loader["train"])
+             self.criterion = torch.nn.MSELoss()
+             self.optimizer = optim.AdamW(
+@@ -167,7 +173,7 @@
+         if self.config.TOOLBOX_MODE == "only_test":
+             if not os.path.exists(self.config.INFERENCE.MODEL_PATH):
+                 raise ValueError("Inference model path error! Please check INFERENCE.MODEL_PATH in your yaml.")
+-            self.model.load_state_dict(torch.load(self.config.INFERENCE.MODEL_PATH))
++            self.model.load_state_dict(torch.load(self.config.INFERENCE.MODEL_PATH, weights_only=True))
+             print("Testing uses pretrained model!")
+         else:
+             if self.config.TEST.USE_LAST_EPOCH:
+@@ -175,13 +181,13 @@
+                 self.model_dir, self.model_file_name + '_Epoch' + str(self.max_epoch_num - 1) + '.pth')
+                 print("Testing uses last epoch as non-pretrained model!")
+                 print(last_epoch_model_path)
+-                self.model.load_state_dict(torch.load(last_epoch_model_path))
++                self.model.load_state_dict(torch.load(last_epoch_model_path, weights_only=True))
+             else:
+                 best_model_path = os.path.join(
+                     self.model_dir, self.model_file_name + '_Epoch' + str(self.best_epoch) + '.pth')
+                 print("Testing uses best epoch selected using model selection as non-pretrained model!")
+                 print(best_model_path)
+-                self.model.load_state_dict(torch.load(best_model_path))
++                self.model.load_state_dict(torch.load(best_model_path, weights_only=True))
+ 
+         self.model = self.model.to(self.config.DEVICE)
+         self.model.eval()

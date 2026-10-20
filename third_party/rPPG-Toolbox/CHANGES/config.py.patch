@@ -1,0 +1,112 @@
+--- a/config.py
++++ b/config.py
+@@ -30,6 +30,7 @@
+ # SGD momentum
+ _C.TRAIN.OPTIMIZER.MOMENTUM = 0.9
+ _C.TRAIN.MODEL_FILE_NAME = ''
++_C.TRAIN.PRETRAINED_MODEL = ''  # Path to pretrained model for transfer learning
+ _C.TRAIN.PLOT_LOSSES_AND_LR = True
+ # Train.Data settings
+ _C.TRAIN.DATA = CN()
+@@ -57,6 +58,10 @@
+ _C.TRAIN.DATA.DATA_FORMAT = 'NDCHW'
+ _C.TRAIN.DATA.BEGIN = 0.0
+ _C.TRAIN.DATA.END = 1.0
++_C.TRAIN.DATA.KFOLD_CSV = ''
++_C.TRAIN.DATA.KFOLD_ID = -1
++_C.TRAIN.DATA.KFOLD_TEST_FOLD = False
++_C.TRAIN.DATA.KFOLD_SPLIT_CSV = ''  # KR-rPPG: optional per-fold train/valid list (release IDs)
+ _C.TRAIN.DATA.FOLD = CN()
+ _C.TRAIN.DATA.FOLD.FOLD_NAME = ''
+ _C.TRAIN.DATA.FOLD.FOLD_PATH = ''
+@@ -122,6 +127,10 @@
+ _C.VALID.DATA.DATA_FORMAT = 'NDCHW'
+ _C.VALID.DATA.BEGIN = 0.0
+ _C.VALID.DATA.END = 1.0
++_C.VALID.DATA.KFOLD_CSV = ''
++_C.VALID.DATA.KFOLD_ID = -1
++_C.VALID.DATA.KFOLD_TEST_FOLD = False
++_C.VALID.DATA.KFOLD_SPLIT_CSV = ''  # KR-rPPG: optional per-fold train/valid list (release IDs)
+ _C.VALID.DATA.FOLD = CN()
+ _C.VALID.DATA.FOLD.FOLD_NAME = ''
+ _C.VALID.DATA.FOLD.FOLD_PATH = ''
+@@ -189,6 +198,10 @@
+ _C.TEST.DATA.DATA_FORMAT = 'NDCHW'
+ _C.TEST.DATA.BEGIN = 0.0
+ _C.TEST.DATA.END = 1.0
++_C.TEST.DATA.KFOLD_CSV = ''
++_C.TEST.DATA.KFOLD_ID = -1
++_C.TEST.DATA.KFOLD_TEST_FOLD = False
++_C.TEST.DATA.KFOLD_SPLIT_CSV = ''  # KR-rPPG: optional per-fold train/valid list (release IDs)
+ _C.TEST.DATA.FOLD = CN()
+ _C.TEST.DATA.FOLD.FOLD_NAME = ''
+ _C.TEST.DATA.FOLD.FOLD_PATH = ''
+@@ -319,6 +332,12 @@
+ _C.MODEL.FactorizePhys.MD_RESIDUAL = True
+ 
+ # -----------------------------------------------------------------------------
++# Model Settings for DeepPhys
++# -----------------------------------------------------------------------------
++_C.MODEL.DEEPPHYS = CN()
++_C.MODEL.DEEPPHYS.FRAME_DEPTH = 10
++
++# -----------------------------------------------------------------------------
+ # Model Settings for TS-CAN
+ # -----------------------------------------------------------------------------
+ _C.MODEL.TSCAN = CN()
+@@ -346,6 +365,10 @@
+ _C.MODEL.PHYSFORMER.NUM_HEADS = 4
+ _C.MODEL.PHYSFORMER.NUM_LAYERS = 12
+ _C.MODEL.PHYSFORMER.THETA = 0.7
++# KR-rPPG: gra_sharp passed to the PhysFormer forward pass; < 0 means 'use THETA' (KR-rPPG k-fold training
++# and scoring of the models trained with this code); 2.0 is the upstream rPPG-Toolbox value, used to score
++# the official PURE / UBFC-rPPG weights.
++_C.MODEL.PHYSFORMER.GRA_SHARP = -1.0
+ 
+ # -----------------------------------------------------------------------------
+ # Inference settings
+@@ -371,18 +394,43 @@
+ _C.LOG.PATH = "runs/exp"
+ 
+ 
++def _expand_env_vars(obj):
++    """Recursively expand ${VAR} environment variable references in strings."""
++    if isinstance(obj, str) and '${' in obj:
++        return os.path.expandvars(obj)
++    elif isinstance(obj, dict):
++        return {k: _expand_env_vars(v) for k, v in obj.items()}
++    elif isinstance(obj, list):
++        return [_expand_env_vars(v) for v in obj]
++    return obj
++
++
+ def _update_config_from_file(config, cfg_file):
+     config.defrost()
+     with open(cfg_file, 'r') as f:
+         yaml_cfg = yaml.load(f, Loader=yaml.FullLoader)
+ 
++    # Expand environment variables (e.g., ${KR_RPPG_ROOT}) in all string values
++    yaml_cfg = _expand_env_vars(yaml_cfg)
++    _unresolved = sorted(set(re.findall(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}', yaml.safe_dump(yaml_cfg))))
++    if _unresolved:
++        raise ValueError(f'{cfg_file}: environment variable(s) not set: {", ".join(_unresolved)}')
++
+     for cfg in yaml_cfg.setdefault('BASE', ['']):
+         if cfg:
+             _update_config_from_file(
+                 config, os.path.join(os.path.dirname(cfg_file), cfg)
+             )
+     print('=> Merging a config file from {}'.format(cfg_file))
+-    config.merge_from_file(cfg_file)
++    # Write expanded config to a temp file for merge_from_file
++    import tempfile
++    with tempfile.NamedTemporaryFile('w', suffix='.yaml', delete=False) as tmp:
++        yaml.dump(yaml_cfg, tmp, default_flow_style=False)
++        tmp_path = tmp.name
++    try:
++        config.merge_from_file(tmp_path)
++    finally:
++        os.unlink(tmp_path)
+     config.freeze()
+ 
+ 

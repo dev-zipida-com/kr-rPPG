@@ -1,0 +1,91 @@
+--- a/dataset/data_loader/PURELoader.py
++++ b/dataset/data_loader/PURELoader.py
+@@ -2,12 +2,11 @@
+ 
+ Details for the PURE Dataset see https://www.tu-ilmenau.de/universitaet/fakultaeten/fakultaet-informatik-und-automatisierung/profil/institute-und-fachgebiete/institut-fuer-technische-informatik-und-ingenieurinformatik/fachgebiet-neuroinformatik-und-kognitive-robotik/data-sets-code/pulse-rate-detection-dataset-pure
+ If you use this dataset, please cite the following publication:
+-Stricker, R., Müller, S., Gross, H.-M.
++Stricker, R., Mueller, S., Gross, H.-M.
+ Non-contact Video-based Pulse Rate Measurement on a Mobile Service Robot
+ in: Proc. 23st IEEE Int. Symposium on Robot and Human Interactive Communication (Ro-Man 2014), Edinburgh, Scotland, UK, pp. 1056 - 1062, IEEE 2014
+ """
+ import glob
+-import glob
+ import json
+ import os
+ import re
+@@ -22,7 +21,7 @@
+     """The data loader for the PURE dataset."""
+ 
+     def __init__(self, name, data_path, config_data, device=None):
+-        """Initializes an PURE dataloader.
++        """Initializes a PURE dataloader.
+             Args:
+                 data_path(str): path of a folder which stores raw video and bvp data.
+                 e.g. data_path should be "RawData" for below dataset structure:
+@@ -59,7 +58,7 @@
+         return dirs
+ 
+     def split_raw_data(self, data_dirs, begin, end):
+-        """Returns a subset of data dirs, split with begin and end values, 
++        """Returns a subset of data dirs, split with begin and end values,
+         and ensures no overlapping subjects between splits"""
+ 
+         # return the full directory
+@@ -72,28 +71,23 @@
+             subject = data['subject']
+             data_dir = data['path']
+             index = data['index']
+-            # creates a dictionary of data_dirs indexed by subject number
+-            if subject not in data_info:  # if subject not in the data info dictionary
+-                data_info[subject] = []  # make an emplty list for that subject
+-            # append a tuple of the filename, subject num, trial num, and chunk num
++            if subject not in data_info:
++                data_info[subject] = []
+             data_info[subject].append({"index": index, "path": data_dir, "subject": subject})
+ 
+-        subj_list = list(data_info.keys())  # all subjects by number ID (1-27)
++        subj_list = list(data_info.keys())
+         subj_list = sorted(subj_list)
+-        num_subjs = len(subj_list)  # number of unique subjects
++        num_subjs = len(subj_list)
+ 
+-        # get split of data set (depending on start / end)
+         subj_range = list(range(0, num_subjs))
+         if begin != 0 or end != 1:
+             subj_range = list(range(int(begin * num_subjs), int(end * num_subjs)))
+ 
+-        # compile file list
+         data_dirs_new = []
+         for i in subj_range:
+             subj_num = subj_list[i]
+             subj_files = data_info[subj_num]
+-            data_dirs_new += subj_files  # add file information to file_list (tuple of fname, subj ID, trial num,
+-            # chunk num)
++            data_dirs_new += subj_files
+ 
+         return data_dirs_new
+ 
+@@ -104,11 +98,9 @@
+ 
+         # Read Frames
+         if 'None' in config_preprocess.DATA_AUG:
+-            # Utilize dataset-specific function to read video
+             frames = self.read_video(
+                 os.path.join(data_dirs[i]['path'], filename, ""))
+         elif 'Motion' in config_preprocess.DATA_AUG:
+-            # Utilize general function to read video in .npy format
+             frames = self.read_npy_video(
+                 glob.glob(os.path.join(data_dirs[i]['path'], filename, '*.npy')))
+         else:
+@@ -133,7 +125,9 @@
+         frames = list()
+         all_png = sorted(glob.glob(video_file + '*.png'))
+         for png_path in all_png:
+-            img = cv2.imread(png_path)
++            # Resolve symlinks to avoid NFS double-resolution overhead
++            real_path = os.path.realpath(png_path)
++            img = cv2.imread(real_path)
+             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+             frames.append(img)
+         return np.asarray(frames)

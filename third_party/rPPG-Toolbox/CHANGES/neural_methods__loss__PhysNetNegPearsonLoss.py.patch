@@ -1,0 +1,13 @@
+--- a/neural_methods/loss/PhysNetNegPearsonLoss.py
++++ b/neural_methods/loss/PhysNetNegPearsonLoss.py
+@@ -31,7 +31,9 @@
+             sum_x2 = torch.sum(torch.pow(preds[i],2))  
+             sum_y2 = torch.sum(torch.pow(labels[i],2)) 
+             N = preds.shape[1]
+-            pearson = (N*sum_xy - sum_x*sum_y)/(torch.sqrt((N*sum_x2 - torch.pow(sum_x,2))*(N*sum_y2 - torch.pow(sum_y,2))))
++            denom = torch.sqrt(torch.clamp((N*sum_x2 - torch.pow(sum_x,2))*(N*sum_y2 - torch.pow(sum_y,2)), min=1e-8))
++            pearson = (N*sum_xy - sum_x*sum_y) / denom
++            pearson = torch.clamp(pearson, min=-1.0, max=1.0)
+             loss += 1 - pearson
+             
+             
