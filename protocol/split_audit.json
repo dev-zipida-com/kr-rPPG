@@ -1,0 +1,51 @@
+{
+  "method": "sorted public participant IDs; first floor(0.9*n) train, remainder valid",
+  "split_randomized": false,
+  "training_seed": 100,
+  "participants": 296,
+  "rows": 1184,
+  "fold_assignment_sha256": "5c8c4b525ee64c70e48e0793863ccc02a2511f7bb5c805af3a4936e2b4e294af",
+  "split_sha256": "e6fa3a94c66a884c53744db1f12d3bede6c1ed2b3af5876b9397fed014042d59",
+  "folds": [
+    {
+      "fold": 0,
+      "train_participants": 212,
+      "valid_participants": 24,
+      "test_participants": 60,
+      "overlap": 0,
+      "union_participants": 296
+    },
+    {
+      "fold": 1,
+      "train_participants": 213,
+      "valid_participants": 24,
+      "test_participants": 59,
+      "overlap": 0,
+      "union_participants": 296
+    },
+    {
+      "fold": 2,
+      "train_participants": 213,
+      "valid_participants": 24,
+      "test_participants": 59,
+      "overlap": 0,
+      "union_participants": 296
+    },
+    {
+      "fold": 3,
+      "train_participants": 213,
+      "valid_participants": 24,
+      "test_participants": 59,
+      "overlap": 0,
+      "union_participants": 296
+    },
+    {
+      "fold": 4,
+      "train_participants": 213,
+      "valid_participants": 24,
+      "test_participants": 59,
+      "overlap": 0,
+      "union_participants": 296
+    }
+  ]
+}

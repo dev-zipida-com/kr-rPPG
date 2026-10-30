@@ -1,18 +1,18 @@
 --- a/neural_methods/trainer/EfficientPhysTrainer.py
 +++ b/neural_methods/trainer/EfficientPhysTrainer.py
-@@ -37,6 +37,12 @@
+@@ -36,6 +36,12 @@
+             self.model = EfficientPhys(frame_depth=self.frame_depth, img_size=config.TRAIN.DATA.PREPROCESS.RESIZE.H).to(
                  self.device)
              self.model = torch.nn.DataParallel(self.model, device_ids=list(range(config.NUM_OF_GPU_TRAIN)))
- 
++
 +            # Load pretrained model for transfer learning
 +            if config.TRAIN.PRETRAINED_MODEL:
 +                print(f"Loading pretrained model: {config.TRAIN.PRETRAINED_MODEL}")
 +                self.model.load_state_dict(torch.load(config.TRAIN.PRETRAINED_MODEL, map_location=self.device, weights_only=True))
 +                print("Pretrained model loaded successfully!")
-+
+ 
              self.num_train_batches = len(data_loader["train"])
              self.criterion = torch.nn.MSELoss()
-             self.optimizer = optim.AdamW(
 @@ -167,7 +173,7 @@
          if self.config.TOOLBOX_MODE == "only_test":
              if not os.path.exists(self.config.INFERENCE.MODEL_PATH):

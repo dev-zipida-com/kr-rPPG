@@ -1,6 +1,30 @@
 --- a/dataset/data_loader/UBFCPHYSLoader.py
 +++ b/dataset/data_loader/UBFCPHYSLoader.py
-@@ -88,23 +88,138 @@
+@@ -14,11 +14,12 @@
+ import cv2
+ import numpy as np
+ from dataset.data_loader.BaseLoader import BaseLoader
++from dataset.data_loader.ExternalCompactLoader import ExternalCompactMixin
+ from tqdm import tqdm
+ import csv
+ import pandas as pd
+ 
+-class UBFCPHYSLoader(BaseLoader):
++class UBFCPHYSLoader(ExternalCompactMixin, BaseLoader):
+     """The data loader for the UBFC-PHYS dataset."""
+ 
+     def __init__(self, name, data_path, config_data, device=None):
+@@ -58,7 +59,8 @@
+                 config_data(CfgNode): data settings(ref:config.py).
+         """
+         self.filtering = config_data.FILTERING
+-        super().__init__(name, data_path, config_data, device)
++        if not self._init_external_compact(name, data_path, config_data):
++            super().__init__(name, data_path, config_data, device)
+ 
+     def get_raw_data(self, data_path):
+         """Returns data directories under the path(For UBFC-PHYS dataset)."""
+@@ -88,22 +90,137 @@
          filename = os.path.split(data_dirs[i]['path'])[-1]
          saved_filename = data_dirs[i]['index']
  
@@ -35,7 +59,7 @@
 +            frames_clips, bvps_clips = self.preprocess(frames, bvps, config_preprocess)
          input_name_list, label_name_list = self.save_multi_process(frames_clips, bvps_clips, saved_filename)
          file_list_dict[i] = input_name_list
- 
++
 +    @staticmethod
 +    def _can_stream_resize_preprocess(config_preprocess):
 +        """Use a memory-safe UBFC-Phys path when it is output-equivalent.
@@ -143,7 +167,6 @@
 +            bvps_clips = np.array([bvps])
 +
 +        return frames_clips, bvps_clips
-+
+ 
      def load_preprocessed_data(self):
          """ Loads the preprocessed data listed in the file list.
- 

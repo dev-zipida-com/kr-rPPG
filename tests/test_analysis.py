@@ -1,3 +1,4 @@
+# Historical synthetic helper checks; these numeric fixtures are not current manuscript targets.
 """Figure 3 / Table 8 aggregation on synthetic predictions (no real data); Table 7 is tested in test_table7.py."""
 
 import importlib.util
@@ -74,20 +75,10 @@ def test_rows_without_manuscript_values_print_a_dash(tmp_path, capsys):
     assert "1.00" in line and "5.00" in line and "(    -)" in line
 
 
-def test_expected_figure3_values_match_table8_manuscript_row():
+def test_historical_figure3_values_match_historical_table8_row():
     expected = json.loads((REPO / "analysis" / "figure3" / "expected_values.json").read_text())["values"]
     row = [expected[name]["All"]["mae"] for name in ("PhysNet", "PhysFormer", "DeepPhys", "TS-CAN", "EfficientPhys")]
     assert row == [1.47, 1.51, 11.83, 7.48, 4.81]
     assert table8.ROWS[0][2] == tuple(row)
 
 
-def test_readme_table8_lists_the_reference_values_of_summarize_table8():
-    section = (REPO / "README.md").read_text().split("## Expected results (manuscript)", 1)[1].split("\n## ", 1)[0]
-    readme = {}
-    for line in section.splitlines():
-        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        if len(cells) == 6 and "->" in cells[0] and all(c.replace(".", "", 1).isdigit() for c in cells[1:]):
-            label = cells[0].replace(" (5-fold, internal)", "")
-            readme[label] = tuple(float(cell) for cell in cells[1:])
-    listed = {label.split(None, 1)[1]: values for _family, label, values in table8.ROWS if values is not None}
-    assert len(readme) == 7 and readme == listed

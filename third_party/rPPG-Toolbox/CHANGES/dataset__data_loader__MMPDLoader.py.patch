@@ -1,6 +1,31 @@
 --- a/dataset/data_loader/MMPDLoader.py
 +++ b/dataset/data_loader/MMPDLoader.py
-@@ -55,7 +55,7 @@
+@@ -9,6 +9,7 @@
+ import re
+ 
+ from .BaseLoader import BaseLoader
++from .ExternalCompactLoader import ExternalCompactMixin
+ from multiprocessing import Pool, Process, Value, Array, Manager
+ from tqdm import tqdm
+ import pandas as pd
+@@ -21,7 +22,7 @@
+ 
+ simplefilter(action='ignore', category=FutureWarning)
+ 
+-class MMPDLoader(BaseLoader):
++class MMPDLoader(ExternalCompactMixin, BaseLoader):
+     """The data loader for the MMPD dataset."""
+ 
+     def __init__(self, name, data_path, config_data, device=None):
+@@ -49,13 +50,14 @@
+                 config_data(CfgNode): data settings(ref:config.py).
+         """
+         self.info = config_data.INFO
+-        super().__init__(name, data_path, config_data, device)
++        if not self._init_external_compact(name, data_path, config_data):
++            super().__init__(name, data_path, config_data, device)
+ 
+ 
      def get_raw_data(self, raw_data_path):
          """Returns data directories under the path(For MMPD dataset)."""
  
@@ -9,7 +34,7 @@
          if not data_dirs:
              raise ValueError(self.dataset_name + ' data paths empty!')
          dirs = list()
-@@ -183,6 +183,33 @@
+@@ -183,6 +185,33 @@
          self.labels = labels
          self.preprocessed_data_len = len(inputs)
  

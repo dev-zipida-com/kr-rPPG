@@ -1,0 +1,163 @@
+{
+  "schema_version": "kr-rppg-release-identity-v1",
+  "status": "local_prepared_snapshot_remote_identity_unverified",
+  "dataset": "KR-rPPG",
+  "release_version": "v1.0",
+  "video_transform": "BFDT, 8x8 blocks, keep ratio0.02",
+  "snapshot_frozen_utc": "2026-10-26T03:02:37.836792+00:00",
+  "scope": "Identity of the locally prepared frozen release used for this analysis; not a verified identity claim about a remote Zenodo download.",
+  "release_folder_name": "KR-rPPG",
+  "participants": 296,
+  "released_sessions": 1166,
+  "file_count": 7000,
+  "archive_count": 11,
+  "task_counts": {
+    "T00": 291,
+    "T01": 293,
+    "T02": 289,
+    "T03": 293
+  },
+  "fold_counts": {
+    "0": 60,
+    "1": 59,
+    "2": 59,
+    "3": 59,
+    "4": 59
+  },
+  "metadata_columns": [
+    "participant_key",
+    "site",
+    "age",
+    "sex",
+    "height",
+    "weight",
+    "bmi",
+    "makeup",
+    "glasses",
+    "accessories",
+    "sbp",
+    "dbp",
+    "hr_rest",
+    "hba1c",
+    "fpg",
+    "creatinine",
+    "gfr",
+    "ast",
+    "alt",
+    "dm",
+    "htn",
+    "dyslipidemia",
+    "ild",
+    "other_comorbidity_count"
+  ],
+  "expected_sha256": {
+    "MANIFEST.csv": "d955e1ad9c89bd5842bb4e26388296bd92e7a9231ec14fb381e90b3a0da8f777",
+    "KR-rPPG_v1.0_metadata.zip": "df729ede9c11cdb6baa2f71f09ec05aa7a989c431f37842758270c2585ccb2a4",
+    "SHA256SUMS.txt": "a4dbce83ea5e8ee6a1fcd3bfc29a271432d834a7cb9aa81ff7e37db2a354b8aa",
+    "metadata/participants_dictionary.csv": "c926ab6d511b353240fddf3faeaf5ae5df7f26623bc8bb2ab07b2b939a2ef938",
+    "metadata/fold_assignment.csv": "5c8c4b525ee64c70e48e0793863ccc02a2511f7bb5c805af3a4936e2b4e294af",
+    "metadata/participants.csv": "d336020b17bda72d942eccbc5aeac614365e4313ff81b8baab94a806b33be33b",
+    "metadata/task_session_availability.csv": "807af292cc5e706e867780db281c6bdf4263cca264c00e0c182f2e46e9aa7c1d"
+  },
+  "hash_scope": "Unchanged video/signal identities are inherited from the execution snapshot. Current metadata/package hashes incorporate the explicitly recorded metadata-only amendment when present; no full dataset rehash was performed. This sanitized JSON is not byte-identical to the internal execution manifest.",
+  "prepared_archives": [
+    {
+      "name": "KR-rPPG_v1.0_metadata.zip",
+      "member_count": 4,
+      "size_bytes": 8948
+    },
+    {
+      "name": "KR-rPPG_v1.0_p001-p030.zip",
+      "member_count": 714,
+      "size_bytes": 3549118787
+    },
+    {
+      "name": "KR-rPPG_v1.0_p031-p060.zip",
+      "member_count": 702,
+      "size_bytes": 3513145874
+    },
+    {
+      "name": "KR-rPPG_v1.0_p061-p090.zip",
+      "member_count": 714,
+      "size_bytes": 3591152186
+    },
+    {
+      "name": "KR-rPPG_v1.0_p091-p120.zip",
+      "member_count": 714,
+      "size_bytes": 3570544898
+    },
+    {
+      "name": "KR-rPPG_v1.0_p121-p150.zip",
+      "member_count": 708,
+      "size_bytes": 3641761672
+    },
+    {
+      "name": "KR-rPPG_v1.0_p151-p180.zip",
+      "member_count": 702,
+      "size_bytes": 3494637861
+    },
+    {
+      "name": "KR-rPPG_v1.0_p181-p210.zip",
+      "member_count": 696,
+      "size_bytes": 3490295540
+    },
+    {
+      "name": "KR-rPPG_v1.0_p211-p240.zip",
+      "member_count": 714,
+      "size_bytes": 3579000086
+    },
+    {
+      "name": "KR-rPPG_v1.0_p241-p270.zip",
+      "member_count": 714,
+      "size_bytes": 3534777705
+    },
+    {
+      "name": "KR-rPPG_v1.0_p271-p296.zip",
+      "member_count": 618,
+      "size_bytes": 3108706141
+    }
+  ],
+  "remote_identity": {
+    "verified": false,
+    "record_api_url": "https://zenodo.org/api/records/23597165",
+    "last_check_utc": "2026-10-26T03:02:36.203705+00:00",
+    "observed_http_status": 500,
+    "outcome": "The recorded remote API request returned HTTP500. The remote record contents and downloadable bytes have not been verified against this local snapshot."
+  },
+  "release_verification": {
+    "entrypoint": "python -m krrppg_release verify --release-root \"$KR_RPPG_ROOT\" --workers 8",
+    "working_directory": "release_builder",
+    "scope": "Use the existing release-builder verification workflow for the trusted downloaded release. This does not establish that an unavailable remote record is byte-identical to the local prepared snapshot.",
+    "new_validation_procedure_added": false
+  },
+  "declared_exceptions": [
+    {
+      "scope": "historical study records",
+      "description": "Recruitment, consent and ethics approval, acquisition procedures, and original selection or quality-control history are documented from retained study records; these historical claims are not regenerated from the distributed files."
+    },
+    {
+      "scope": "Figure 1 illustrative controls",
+      "description": "The consented original example and additional control transformations use original study images. The released keep-ratio 0.02 example uses the actual distributed BFDT video."
+    },
+    {
+      "scope": "privacy evaluation",
+      "description": "Original gallery images and keep-ratio 1.0, 0.30 and 0.10 control probes require custodian access to original recordings. The keep-ratio 0.02 probe uses the actual distributed BFDT video. Only aggregate privacy results are public."
+    },
+    {
+      "scope": "paired utility controls",
+      "description": "Matched original-video training and testing arms are explicit controls, separate from the primary benchmark on released BFDT videos. Original-video access is required to regenerate these control arms."
+    },
+    {
+      "scope": "external datasets and checkpoints",
+      "description": "External contact waveforms, videos and fixed external-trained weights follow their respective access terms. The public release-based benchmark does not imply that every external weight has a public download."
+    }
+  ],
+  "excluded_from_template": "Host absolute paths, manuscript paths/hashes, private participant identifiers or mappings, and private exception-register paths are omitted.",
+  "metadata_amendment": {
+    "date": "2026-10-27",
+    "field": "other_comorbidity_count",
+    "rule": "0 remains 0; positive values become 1; missingness preserved",
+    "scope": "metadata only; no video, signal, split or evaluation-protocol changes",
+    "original_execution_manifest_preserved": true
+  }
+}

@@ -9,6 +9,7 @@ import numpy as np
 import re
 
 from .BaseLoader import BaseLoader
+from .ExternalCompactLoader import ExternalCompactMixin
 from multiprocessing import Pool, Process, Value, Array, Manager
 from tqdm import tqdm
 import pandas as pd
@@ -21,7 +22,7 @@ from scipy.signal import butter, filtfilt
 
 simplefilter(action='ignore', category=FutureWarning)
 
-class MMPDLoader(BaseLoader):
+class MMPDLoader(ExternalCompactMixin, BaseLoader):
     """The data loader for the MMPD dataset."""
 
     def __init__(self, name, data_path, config_data, device=None):
@@ -49,7 +50,8 @@ class MMPDLoader(BaseLoader):
                 config_data(CfgNode): data settings(ref:config.py).
         """
         self.info = config_data.INFO
-        super().__init__(name, data_path, config_data, device)
+        if not self._init_external_compact(name, data_path, config_data):
+            super().__init__(name, data_path, config_data, device)
 
 
     def get_raw_data(self, raw_data_path):

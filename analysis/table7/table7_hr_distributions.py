@@ -1,3 +1,4 @@
+# HISTORICAL ENTRYPOINT: helpers retained; current manuscript uses the release pipeline.
 #!/usr/bin/env python3
 """Table 7: stationary-rest reference heart-rate distributions, KR-rPPG versus three public rPPG datasets.
 
@@ -326,4 +327,4 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit('Historical analysis entrypoint. For release-based results use analysis/release_statistics/summarize_release.py.')

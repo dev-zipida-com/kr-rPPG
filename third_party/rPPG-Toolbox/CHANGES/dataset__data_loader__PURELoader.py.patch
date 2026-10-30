@@ -1,6 +1,6 @@
 --- a/dataset/data_loader/PURELoader.py
 +++ b/dataset/data_loader/PURELoader.py
-@@ -2,12 +2,11 @@
+@@ -2,11 +2,10 @@
  
  Details for the PURE Dataset see https://www.tu-ilmenau.de/universitaet/fakultaeten/fakultaet-informatik-und-automatisierung/profil/institute-und-fachgebiete/institut-fuer-technische-informatik-und-ingenieurinformatik/fachgebiet-neuroinformatik-und-kognitive-robotik/data-sets-code/pulse-rate-detection-dataset-pure
  If you use this dataset, please cite the following publication:
@@ -9,12 +9,20 @@
  Non-contact Video-based Pulse Rate Measurement on a Mobile Service Robot
  in: Proc. 23st IEEE Int. Symposium on Robot and Human Interactive Communication (Ro-Man 2014), Edinburgh, Scotland, UK, pp. 1056 - 1062, IEEE 2014
  """
- import glob
 -import glob
+ import glob
  import json
  import os
- import re
-@@ -22,7 +21,7 @@
+@@ -15,14 +14,15 @@
+ import cv2
+ import numpy as np
+ from dataset.data_loader.BaseLoader import BaseLoader
++from dataset.data_loader.ExternalCompactLoader import ExternalCompactMixin
+ from tqdm import tqdm
+ 
+ 
+-class PURELoader(BaseLoader):
++class PURELoader(ExternalCompactMixin, BaseLoader):
      """The data loader for the PURE dataset."""
  
      def __init__(self, name, data_path, config_data, device=None):
@@ -23,7 +31,17 @@
              Args:
                  data_path(str): path of a folder which stores raw video and bvp data.
                  e.g. data_path should be "RawData" for below dataset structure:
-@@ -59,7 +58,7 @@
+@@ -42,7 +42,8 @@
+                 name(str): name of the dataloader.
+                 config_data(CfgNode): data settings(ref:config.py).
+         """
+-        super().__init__(name, data_path, config_data, device)
++        if not self._init_external_compact(name, data_path, config_data):
++            super().__init__(name, data_path, config_data, device)
+ 
+     def get_raw_data(self, data_path):
+         """Returns data directories under the path(For PURE dataset)."""
+@@ -59,7 +60,7 @@
          return dirs
  
      def split_raw_data(self, data_dirs, begin, end):
@@ -32,7 +50,7 @@
          and ensures no overlapping subjects between splits"""
  
          # return the full directory
-@@ -72,28 +71,23 @@
+@@ -72,28 +73,23 @@
              subject = data['subject']
              data_dir = data['path']
              index = data['index']
@@ -66,7 +84,7 @@
  
          return data_dirs_new
  
-@@ -104,11 +98,9 @@
+@@ -104,11 +100,9 @@
  
          # Read Frames
          if 'None' in config_preprocess.DATA_AUG:
@@ -78,7 +96,7 @@
              frames = self.read_npy_video(
                  glob.glob(os.path.join(data_dirs[i]['path'], filename, '*.npy')))
          else:
-@@ -133,7 +125,9 @@
+@@ -133,7 +127,9 @@
          frames = list()
          all_png = sorted(glob.glob(video_file + '*.png'))
          for png_path in all_png:

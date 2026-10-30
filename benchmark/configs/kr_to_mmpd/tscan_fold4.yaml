@@ -88,4 +88,4 @@ INFERENCE:
   EVALUATION_WINDOW:
     USE_SMALLER_WINDOW: false
     WINDOW_SIZE: 10
-  MODEL_PATH: ${KR_RPPG_CHECKPOINTS}/kr_5fold/tscan/KFold_tscan_fold4_Epoch9.pth
+  MODEL_PATH: ${KR_RPPG_CHECKPOINTS}/kr_5fold/tscan/KFold_tscan_fold4_Best.pth

@@ -13,12 +13,12 @@ coded as manuscript Table 6 describes them (since 1.4.0; the categories of 1.2.x
     hba1c            rounded to 0.5 %          fpg              rounded to 10 mg/dL
     creatinine       rounded to 0.1 mg/dL      gfr              rounded to 5 mL/min/1.73 m^2
     ast, alt         rounded to 5 U/L
-    other_comorbidity_count  number of positive items among five (0-5, no top-coding)
+    other_comorbidity_count  binary indicator of any of five comorbidities (0/1; legacy column name)
 
 site, sex and the 0/1 flags are the only categorical columns; the other columns are numbers (age in whole years,
 the rest rounded to a fixed step), so they can hold rare values, and combinations of columns are not k-anonymous.
 The release is distributed openly (CC BY-NC 4.0), so the residual risk is addressed only by the responsible-use
-conditions published with it. There is no top or bottom coding. Everything is
+conditions published with it. There is no top or bottom coding of age or clinical measurements. Everything is
 computed from the raw CRF values (not from the rounded <source_root>/metadata/participants.csv). No data-quality
 check removes a value: values the 1.3.0 rules blanked are released as recorded in the CRF and the check hits are
 only counted; the two in-memory corrections that add information are kept (eGFR computed with CKD-EPI 2009 from
@@ -30,6 +30,9 @@ number prefix to the letter), in participants.csv, in the dictionary and in the 
 """
 
 from __future__ import annotations
+
+# 2026-10-27: user-approved metadata amendment: other_comorbidity_count is now
+# binary (0/1), preserving the existing column name, missingness, and all other values.
 
 import os
 import re
@@ -84,13 +87,13 @@ SNAP_DECIMALS = 9  # removes float noise (17.499999999999996 -> 17.5) before rou
 # umol/L, FPG in mmol/L, HbA1c in mmol/mol), written on each column's grid. They are not data-quality rules and
 # lie well outside the former ones: since 1.4.0 the values below SBP_MIN_PLAUSIBLE and FPG_MIN_PLAUSIBLE and the
 # heights outside HEIGHT_RANGE_CM are released, so the sbp and fpg lower bounds are no longer the former thresholds
-# (70 and 40 in 1.3.0). The comorbidity count has five items. bmi has no range of its own: verify checks it against
+# (70 and 40 in 1.3.0). The legacy comorbidity column permits only 0 or 1. bmi has no range of its own: verify checks it against
 # the row's height and weight (released_bmi).
 PLAUSIBLE_RANGES: Dict[str, Tuple[str, str]] = {
     "age": ("0", "120"), "height": ("50", "250"), "weight": ("10", "300"),
     "sbp": ("50", "300"), "dbp": ("20", "200"), "hr_rest": ("20", "250"), "hba1c": ("3.0", "20.0"),
     "fpg": ("10", "1000"), "creatinine": ("0.1", "20.0"), "gfr": ("0", "200"), "ast": ("0", "5000"),
-    "alt": ("0", "5000"), "other_comorbidity_count": ("0", str(len(OTHER_COMORBIDITIES))),
+    "alt": ("0", "5000"), "other_comorbidity_count": ("0", "1"),
 }
 
 
@@ -379,10 +382,15 @@ def _flag(value) -> str:
 
 
 def other_comorbidity_count(data: pd.DataFrame) -> pd.Series:
-    """Number of the five other comorbidities present (0-5); NaN unless all five items are known (a sum with
-    min_count=5). Renal disease includes the eGFR < 15 correction of apply_quality_rules."""
+    """Binary presence of the five other comorbidities (legacy column name).
+
+    Since 1.6.0, any positive historical count is 1 and zero is 0. Preserve
+    missing values unless all five items are known, exactly as the previous
+    count implementation. The existing eGFR < 15 renal correction is unchanged.
+    """
     other = data[[f"other_{name}" for name in OTHER_COMORBIDITIES]]
-    return other.sum(axis=1, min_count=len(OTHER_COMORBIDITIES))
+    count = other.sum(axis=1, min_count=len(OTHER_COMORBIDITIES))
+    return count.gt(0).astype(float).where(count.notna())
 
 
 def derive_rows(data: pd.DataFrame, mapping: Dict[str, str]) -> List[List[str]]:
@@ -400,8 +408,7 @@ def derive_rows(data: pd.DataFrame, mapping: Dict[str, str]) -> List[List[str]]:
 
 # Manuscript Table 6: description and unit / coding of every column (spelled 'creatinine'; units written with
 # m^2). Added to the Table 6 text: the two kept corrections (gfr, other_comorbidity_count) and the 1.2.1 hr_rest
-# clarification; since 1.5.0 site and ild name the site letters. '{observed}' is replaced by the observed range of
-# the count (participants_dictionary).
+# clarification; since 1.5.0 site and ild name the site letters. Since 1.6.0 the legacy comorbidity column is binary.
 DICTIONARY = {
     "participant_key": ("Identifier", "Pseudonymized participant identifier (pNNN; e.g., p001)", "-"),
     "site": ("Demographics", "Collection site (A / B / C)", "-"),
@@ -438,9 +445,8 @@ DICTIONARY = {
     "ild": ("Comorbidity indicators", "Interstitial lung disease (site C only; blank = not ascertained)", "0/1"),
     "other_comorbidity_count": (
         "Comorbidity indicators",
-        ("Number of positive indicators among cardiovascular disease, cerebrovascular disease, cancer, renal disease, "
-         "and lung disease; renal disease is also counted when eGFR is below 15 mL/min/1.73 m^2"),
-        f"0-{len(OTHER_COMORBIDITIES)} possible{{observed}}",
+        'Binary indicator of any cardiovascular disease, cerebrovascular disease, cancer, renal disease, or lung disease; renal disease is also counted when eGFR is below 15 mL/min/1.73 m^2. The legacy column name is retained; values are not a disease count.',
+        '0 = none; 1 = at least one; blank = not fully ascertained',
     ),
 }
 

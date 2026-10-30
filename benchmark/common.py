@@ -20,7 +20,7 @@ def require_env(names: Iterable[str]) -> None:
     """Fail early with a readable message when a placeholder used by the configs is not set."""
     missing = [name for name in names if not os.environ.get(name)]
     if missing:
-        sys.exit("set these environment variables first (see README, 'Environment variables'): "
+        sys.exit("Set required environment variables: "
                  + ", ".join(missing))
 
 

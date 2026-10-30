@@ -46,7 +46,7 @@ def test_only_known_placeholders_and_no_absolute_paths(path):
 
 
 def test_checkpoint_paths_match_the_manifest():
-    """Only the official rPPG-Toolbox weights have hashes; every other model path names a model users train."""
+    """Official weights use the upstream manifest; local models use fixed family aliases."""
     with open(REPO / "checkpoints" / "checkpoints_manifest.csv", newline="") as handle:
         files = {row["file"] for row in csv.DictReader(handle)}
     upstream, trained_by_users = set(), set()
@@ -57,9 +57,11 @@ def test_checkpoint_paths_match_the_manifest():
         elif model_path.startswith("${RPPG_TOOLBOX_WEIGHTS}/"):
             upstream.add("upstream:final_model_release/" + model_path.split("/", 1)[1])
     assert upstream == files and len(upstream) == 10
-    # 28 KR-rPPG fold models (kr_kfold/train; PhysNet folds 1-3 at two epochs) and 5 MMPD models (mmpd_to_kr/train)
-    assert len(trained_by_users) == 28 + 5
+    assert len(trained_by_users) == 25 + 5
     assert {name.split("/", 1)[0] for name in trained_by_users} == {"kr_5fold", "mmpd_trained"}
+    kr_paths = {name for name in trained_by_users if name.startswith("kr_5fold/")}
+    assert len(kr_paths) == 25
+    assert all(name.endswith("_Best.pth") for name in kr_paths)
 
 
 def test_run_stops_before_any_physformer_config_without_the_upstream_loss(tmp_path, monkeypatch, capsys):
@@ -95,7 +97,7 @@ def test_toolbox_loads_a_config_and_refuses_unset_placeholders(tmp_path, monkeyp
     cfg = get_config(Namespace(config_file=path))
     assert cfg.TEST.DATA.KFOLD_ID == 1 and cfg.TEST.DATA.KFOLD_TEST_FOLD
     assert cfg.TEST.DATA.DATA_PATH == os.environ["KR_RPPG_ROOT"]
-    assert cfg.INFERENCE.MODEL_PATH.endswith("kr_5fold/physnet/KFold_physnet_fold1_Epoch8.pth")
+    assert cfg.INFERENCE.MODEL_PATH.endswith("kr_5fold/physnet/KFold_physnet_fold1_Best.pth")
     assert cfg.MODEL.PHYSFORMER.GRA_SHARP < 0  # default: use THETA, as in KR-rPPG k-fold training
 
 
@@ -161,20 +163,15 @@ def test_config_patterns_expand_from_any_folder():
         common.expand_configs(["preprocess/nothing_*.yaml"])
 
 
-def test_readme_preprocess_commands_resolve_from_the_repo_root():
-    """Every argument of the README's preprocess commands names configs when run from the repository root."""
-    import glob
-    import shlex
+def test_preprocess_configs_match_supported_loaders():
+    import preprocess
 
-    import common
-
-    text = (REPO / "README.md").read_text()
-    commands = re.findall(r"^python benchmark/preprocess\.py (.+?)(?:\s+#.*)?$", text.replace("\\\n", " "), flags=re.MULTILINE)
-    assert commands
-    for command in commands:
-        for arg in shlex.split(command):
-            # what bash does from the repo root: expand a matching wildcard, else pass the word on unchanged
-            words = sorted(glob.glob(str(REPO / arg))) if any(c in arg for c in "*?[") else [arg]
-            assert words, arg
-            for word in words:
-                assert common.expand_configs([word]), word
+    datasets = set()
+    for path in sorted((CONFIGS / "preprocess").glob("*.yaml")):
+        data = yaml.safe_load(path.read_text())["TEST"]["DATA"]
+        assert data["DO_PREPROCESS"] is True, path.name
+        assert data["DATASET"] in preprocess.LOADERS, path.name
+        datasets.add(data["DATASET"])
+        module, _ = preprocess.LOADERS[data["DATASET"]]
+        assert (REPO / "third_party" / "rPPG-Toolbox" / (module.replace(".", "/") + ".py")).is_file()
+    assert datasets == set(preprocess.LOADERS)

@@ -1,3 +1,4 @@
+# HISTORICAL ENTRYPOINT: helpers retained; current manuscript uses the release pipeline.
 #!/usr/bin/env python3
 """Turn rPPG-Toolbox test-output pickles into one per-session heart-rate table.
 
@@ -102,4 +103,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit('Historical analysis entrypoint. For release-based results use benchmark/collect_release_predictions.py.')

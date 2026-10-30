@@ -15,6 +15,8 @@ stops before starting any config.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
 import subprocess
 import sys
@@ -24,7 +26,7 @@ from typing import List, Optional
 
 import yaml
 
-from common import CONFIGS, TOOLBOX, expand_configs, import_toolbox, work_dir
+from common import CONFIGS, TOOLBOX, REPO, expand_configs, import_toolbox, work_dir
 
 
 def physformer_configs(paths: List[Path]) -> List[Path]:
@@ -57,6 +59,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 1
     logs = work_dir() / "logs"
     env = dict(os.environ)
+    # Avoid synchronous huge-page compaction on this fragmented-memory host.
+    # NumPy reads this at import; apply to newly launched jobs, without changing arrays/math.
+    env.setdefault("NUMPY_MADVISE_HUGEPAGE", "0")
     if args.gpu is not None:
         env["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
     for path in configs:
@@ -69,8 +74,25 @@ def main(argv: Optional[List[str]] = None) -> int:
             continue
         log.parent.mkdir(parents=True, exist_ok=True)
         start = time.time()
+        job_env = dict(env)
+        provenance_dir = log.with_suffix('.execution')
+        provenance_dir.mkdir(parents=True, exist_ok=True)
+        job_env['RPPG_JOB_PROVENANCE_DIR'] = str(provenance_dir)
+        code_files = sorted(TOOLBOX.rglob('*.py')) + [Path(__file__)]
+        provenance = {
+            'config': str(path), 'config_sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+            'started_unix': start, 'packed_cache_requested': job_env.get('KR_RPPG_PACKED_CACHE', '0') == '1',
+            'actual_cache_reads': 'compact_usage_<workerPID>.jsonl in this directory',
+            'environment': {k: job_env.get(k, '') for k in ('CUDA_VISIBLE_DEVICES', 'RPPG_SEED',
+                'RPPG_DATALOADER_WORKERS', 'RPPG_EVAL_DATALOADER_WORKERS', 'RPPG_EVAL_PERSISTENT_WORKERS',
+                'RPPG_PREFETCH_FACTOR', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS',
+                'OPENBLAS_NUM_THREADS', 'NUMPY_MADVISE_HUGEPAGE', 'LD_LIBRARY_PATH', 'KR_RPPG_COMPACT_ROOT', 'RPPG_EXTERNAL_COMPACT_ROOT', 'KR_RPPG_PACKED_CACHE')},
+            'code_sha256': {str(p.relative_to(REPO)): hashlib.sha256(p.read_bytes()).hexdigest() for p in code_files}}
+        (provenance_dir / 'execution.json').write_text(json.dumps(provenance, indent=2) + '\n')
         with open(log, "w", encoding="utf-8") as handle:
-            result = subprocess.run(cmd, cwd=TOOLBOX, env=env, stdout=handle, stderr=subprocess.STDOUT, check=False)
+            result = subprocess.run(cmd, cwd=TOOLBOX, env=job_env, stdout=handle, stderr=subprocess.STDOUT, check=False)
+        provenance.update(exit_code=result.returncode, seconds=time.time() - start)
+        (provenance_dir / 'execution.json').write_text(json.dumps(provenance, indent=2) + '\n')
         print(f"[run] {rel}: exit {result.returncode} after {(time.time() - start) / 60:.1f} min", flush=True)
         if result.returncode != 0:
             print(f"[run] failed; see {log}", file=sys.stderr)

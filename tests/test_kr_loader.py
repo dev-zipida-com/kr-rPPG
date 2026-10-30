@@ -83,12 +83,13 @@ def test_kfold_test_fold_and_train_pool(release):
 def test_split_csv_overrides_the_ratio_split(release, tmp_path):
     split = tmp_path / "split.csv"
     _write_csv(split, ["fold", "participant_key", "split"],
-               [[1, "p901", "valid"], [1, "p903", "train"], [1, "p904", "train"], [0, "p901", "train"]])
+               [[1, p, 'valid' if p == 'p901' else 'train']
+                for p in PARTICIPANTS if p not in {'p902', 'p907'}] + [[0, 'p901', 'train']])
     dirs = _loader(release).get_raw_data(str(release))
     train_loader, valid_loader = _loader(release, "train"), _loader(release, "valid")
     for loader in (train_loader, valid_loader):
         loader.config_data.KFOLD_SPLIT_CSV = str(split)
-    assert {d["participant"] for d in train_loader.split_raw_data(dirs, 0.0, 0.9)} == {"p903", "p904"}
+    assert {d["participant"] for d in train_loader.split_raw_data(dirs, 0.0, 0.9)} == set(PARTICIPANTS) - {'p901', 'p902', 'p907'}
     assert {d["participant"] for d in valid_loader.split_raw_data(dirs, 0.9, 1.0)} == {"p901"}
 
 

@@ -1,0 +1,295 @@
+{
+  "schema_version": "ubfc-phys-decoded-counts-v1",
+  "dataset": "ubfc_phys",
+  "eligible_sessions": 101,
+  "status": "verified_from_completed_decode",
+  "corrections": [
+    {
+      "session": "s10_T1",
+      "source": "s10/vid_s10_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 5118443754,
+        "selected_sha256": "4e04bbe231df50196653eafb117f95b5039a320c4313caa8a799166a4049177f",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "e8b64654651ca44e07af76bc7a59d15cf99c612e13020d50070bbcc18fc07669"
+    },
+    {
+      "session": "s12_T1",
+      "source": "s12/vid_s12_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 5551259058,
+        "selected_sha256": "be8acd16406f642a922fdcdc4f8d2c7d0b19e7ee9bd49c1bc634955875c97e81",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "59cc76187f8599aaa1d4406ce74371ca7abb4d158a9938c221272f1989428806"
+    },
+    {
+      "session": "s16_T1",
+      "source": "s16/vid_s16_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 5630370094,
+        "selected_sha256": "abdbc7d16f37eefa1bfead8a2560b939abdfe516653ddbfe10007034a5e3131d",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "bd75ccab94487aa2a7f02d56d2c96b49115d7a362177ccaf1eff572cfd570ef3"
+    },
+    {
+      "session": "s17_T1",
+      "source": "s17/vid_s17_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 5669810048,
+        "selected_sha256": "833ee397bf3552e4c11a76f32fba75a13d9619c0555c7a8478c3af1684790c43",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "9a37fc1e6aadf8d49ecd5faa087c27de5b679bda140b78515b691130489ec2d1"
+    },
+    {
+      "session": "s18_T1",
+      "source": "s18/vid_s18_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 5087196338,
+        "selected_sha256": "0b65a0ee6ed90687d07906b9cbf74437194782c5a14c4ebbc58cca16026e285a",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "7bbab3c61dbe566407d4999be437c5025927f03b8e0e73c647deaade18e65d4e"
+    },
+    {
+      "session": "s1_T1",
+      "source": "s1/vid_s1_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4954673952,
+        "selected_sha256": "93b33c16d8812785add0bcf69731a9fd15d19a65cecd69f496daae37c47fa3e3",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "3750cc4b05d8f66ab2ec7b9daa2f79e40567b544f742d0935b23e231d4d4b205"
+    },
+    {
+      "session": "s21_T1",
+      "source": "s21/vid_s21_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4684235324,
+        "selected_sha256": "16b6c445c9f2b8818013fe020bae946585f8c43c451110d54c6bf02b51d5b511",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "713fb9d70e0805b1674999ddd8e1a4ca871c2f56e821a644dfd1623382b46d27"
+    },
+    {
+      "session": "s27_T1",
+      "source": "s27/vid_s27_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4709193406,
+        "selected_sha256": "8ded618f351cb8caf463d757b794d231ea5d51ef729fe6382bba0b2c8ddee254",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "9558299b2456f72007567dcebfbc220698cccc7c8ccc5258d804330480131e6f"
+    },
+    {
+      "session": "s2_T1",
+      "source": "s2/vid_s2_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4758969466,
+        "selected_sha256": "360883eb2e892c7863060acef0b2325069b6acc1e0859b1f42908210dabcd676",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "c50591f04e91a16808b6a8c5c06a452ed8decdd79accd86e2c3a7524f3ad0ee8"
+    },
+    {
+      "session": "s36_T1",
+      "source": "s36/vid_s36_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4836770972,
+        "selected_sha256": "e2f4ffc6530ddae31b8c026d984669615e684ec8dc7d24854623eee31f40cc6a",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "86833b908be9f19a7b0859ed5c432501e7b20b289fd5524d16884dfac80ce183"
+    },
+    {
+      "session": "s39_T1",
+      "source": "s39/vid_s39_T1.avi",
+      "header_frames": 6325,
+      "decoded_frames": 6324,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4948153544,
+        "selected_sha256": "4d0043cfdc58db5f6299d107f5c033a5ede043c5146055be7423c93f6822d048",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "a86c8fad015daa467b36d7c3b154858ff0fc71b285ed135d0eae424e39922b0b"
+    },
+    {
+      "session": "s42_T1",
+      "source": "s42/vid_s42_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 5015109510,
+        "selected_sha256": "88661855adf3107c7d5b33a0577c51ad7e72e340ea4fc78b359319caade68232",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "0eabea5cc3912494d9e28e91c391ea134dce3badbc8d85b101e67170f4e50346"
+    },
+    {
+      "session": "s43_T1",
+      "source": "s43/vid_s43_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4830025110,
+        "selected_sha256": "f0b36135c9c062bcde1bfeb88f79b20c7932036a6407aa951c0244c710891984",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "8cf3daf052896bfa254c77fe41746d1f67326789c6a9c43578ddb4dbf4731b37"
+    },
+    {
+      "session": "s44_T1",
+      "source": "s44/vid_s44_T1.avi",
+      "header_frames": 6325,
+      "decoded_frames": 6324,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 5431796980,
+        "selected_sha256": "8504e143418e2bade24456b4f68047fd6c393b831426656e83dea03813cfc11e",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "17a7751de93e811d67453e8cdba31c8d11a0ed67de99ed2ef144e79df2ecf27f"
+    },
+    {
+      "session": "s45_T1",
+      "source": "s45/vid_s45_T1.avi",
+      "header_frames": 6325,
+      "decoded_frames": 6324,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4908450462,
+        "selected_sha256": "540843dbaffffa5eb28c63dfd437df1a10a51d31eddfd678348d7da60b1013bd",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "3c2157908b9e05e49c59c7f32acf2478103f552dc671abd742cd1e117052ba4a"
+    },
+    {
+      "session": "s47_T1",
+      "source": "s47/vid_s47_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4854866152,
+        "selected_sha256": "bc7db7d61b0d2ff23bd76868d5c031bd1fe59216f89f4dc7eea9210f203c5d72",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "a2c72e51fb365bba6969f926a4a1225f9724eb3cfdef374492937730cc79b742"
+    },
+    {
+      "session": "s49_T1",
+      "source": "s49/vid_s49_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4867212414,
+        "selected_sha256": "a806e96d6e9f88256ef405ce66842047d2ac1ff8e97a4ccccd2f4701e4d50604",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "5d18be4ddb616e7a9f37c18d53dac4a3b6c223ec165ff375265a39d6d4bcb79f"
+    },
+    {
+      "session": "s4_T1",
+      "source": "s4/vid_s4_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 5165362266,
+        "selected_sha256": "73d05bde0fdeb6b5e3dcda50c3b6a3d75b000d69ed1d50f6b63ef9da4817fc93",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "45e42718e17e8a11b68a2df5c61a2a4729e8e5b923a83e2d3cf8e088237978e4"
+    },
+    {
+      "session": "s55_T1",
+      "source": "s55/vid_s55_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 5037414620,
+        "selected_sha256": "b22941de85a43c2b03fc957ce35db5ad9cb67cbbc205996c2889fa75cb83bb67",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "b0a8934b8643056b16f09b1bbd3801245b0434ede8361a69d76d186d08cde01b"
+    },
+    {
+      "session": "s5_T1",
+      "source": "s5/vid_s5_T1.avi",
+      "header_frames": 6326,
+      "decoded_frames": 6325,
+      "fs": 35,
+      "common_eval_frames": 6240,
+      "source_fingerprint": {
+        "size_bytes": 4980182188,
+        "selected_sha256": "c144a91a9d3a334742de6bf4f05dc0f0330f5ed598643c3f1a126277697896ff",
+        "method": "first_last_16384_bytes_not_full_hash"
+      },
+      "raw_bvp_values_sha256": "aced0b125845566a6d9432e7512fbe67ed3b7737e61f2d942205277b0597e738"
+    }
+  ],
+  "evidence": {
+    "original_inventory_sha256": "505120e9ad281ca49e52ce9795d038bef6e5dc371ee0964e51ddbd87a14c72ef",
+    "effective_inventory_sha256": "6502732f0d6fe205f2f90ba91ee6551de09f33adc8058827e79266767219eb7b",
+    "failed_build_report_sha256": "28459a4af0aa713e875d09adc74769f13e7ed89741675287a3326c5186737902",
+    "successful_rebuild_report_sha256": "ede8e98eaca3a25250d803739825065b99de24cc5772b783a1cbf44cf957ee90",
+    "complete_manifest_sha256": "9771bccbbc0df6acd1603c5d56730f58b8b8325e0639a6add04fcfaa21ac8171"
+  }
+}

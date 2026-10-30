@@ -10,10 +10,12 @@ which places it next to this module (git-ignored). To keep it outside the reposi
 `--dest /absolute/path/PhysFormerLossComputer.py` and set the environment variable KR_RPPG_PHYSFORMER_LOSS to
 that path.
 
-This module contains no code of that file. On first use it reads the file once, checks its sha256 against the
-pinned value and runs exactly the bytes it checked as module `neural_methods.loss.PhysFormerLossComputer`; a
-missing or different file stops PhysFormer with instructions. It applies the one KR-rPPG change on top of the
-upstream function without editing it: the target heart rate is limited to HR_MIN_BPM..HR_MAX_BPM (40-179 bpm,
+On first use this adapter reads the upstream file once and checks its sha256 against the pinned value; a
+missing or different file stops PhysFormer with instructions. Without editing that file, a single runtime
+source patch hoists the repeated int(target) scalar read out of the 140-bin Python comprehension. The
+original SHA, derived runtime SHA and patch ID are recorded separately. Every Gaussian calculation and
+subsequent floating-point operation retains its original order. The target heart rate is also limited to
+HR_MIN_BPM..HR_MAX_BPM (40-179 bpm,
 the bins of the upstream frequency grid) before the upstream DLDL loss is evaluated, so that an out-of-band
 label falls on the first or last bin instead of an index outside the grid. The result is numerically identical
 to the loss of the KR-rPPG manuscript runs (tests/test_physformer_loss.py).
@@ -23,6 +25,7 @@ from __future__ import annotations
 
 import functools
 import hashlib
+import json
 import os
 import sys
 import types
@@ -38,6 +41,14 @@ UPSTREAM_FILE = Path(__file__).resolve().with_name("PhysFormerLossComputer.py") 
 LOCATION_ENV = "KR_RPPG_PHYSFORMER_LOSS"  # optional: absolute path of the fetched file kept elsewhere
 FETCH_COMMAND = "python tools/fetch_physformer_loss.py"
 _VERIFIED_MARK = "_kr_rppg_verified_sha256"
+_PATCH_MARK = "_kr_rppg_runtime_patch_id"
+_RUNTIME_SHA_MARK = "_kr_rppg_runtime_sha256"
+RUNTIME_PATCH_ID = "dldl-target-int-hoist-v1"
+_SCALAR_STATEMENT = b"        target_distribution = [normal_sampling(int(target), i, std) for i in range(40, 180)]"
+_HOISTED_STATEMENT = (
+    b"        _kr_target_int = int(target)\n"
+    b"        target_distribution = [normal_sampling(_kr_target_int, i, std) for i in range(40, 180)]"
+)
 
 HR_MIN_BPM = 40.0
 HR_MAX_BPM = 179.0
@@ -92,27 +103,52 @@ def check_upstream_loss(path: Path | None = None) -> Path:
     return path
 
 
+def _runtime_source(verified_data: bytes) -> bytes:
+    """Replace exactly one statement after verification; preserve every numerical operation."""
+    if verified_data.count(_SCALAR_STATEMENT) != 1 or b"_kr_target_int" in verified_data:
+        raise UpstreamLossMissing("Pinned PhysFormer loss does not match the single scalar-hoist patch")
+    return verified_data.replace(_SCALAR_STATEMENT, _HOISTED_STATEMENT, 1)
+
+
+def _record_runtime(path: Path, runtime_sha: str) -> None:
+    folder = os.environ.get("RPPG_JOB_PROVENANCE_DIR", "")
+    if folder:
+        target = Path(folder)
+        target.mkdir(parents=True, exist_ok=True)
+        record = {"upstream_file": str(path), "upstream_sha256": UPSTREAM_SHA256,
+                  "runtime_source_sha256": runtime_sha, "patch_id": RUNTIME_PATCH_ID,
+                  "replaced_statements": 1, "source_file_modified": False}
+        (target / "physformer_loss_runtime.json").write_text(json.dumps(record, indent=2) + "\n")
+
+
 @functools.lru_cache(maxsize=None)
 def upstream_loss_computer():
-    """The upstream TorchLossComputer class. The module is built from exactly the bytes whose sha256 was checked
-    (read once, no bytecode cache) and registered as UPSTREAM_MODULE; a module of that name imported by other
-    means is refused."""
+    """Load the SHA-pinned source with the named scalar-hoist runtime patch, without modifying its file.
+    The module records both source hashes; a module imported without the same verification and patch is refused.
+    """
     path = upstream_file()
     data = _verified_bytes(path)
+    runtime_data = _runtime_source(data)
+    runtime_sha = hashlib.sha256(runtime_data).hexdigest()
     module = sys.modules.get(UPSTREAM_MODULE)
     if module is not None:
-        if getattr(module, _VERIFIED_MARK, None) != UPSTREAM_SHA256 or Path(module.__file__) != path:
+        if (getattr(module, _VERIFIED_MARK, None) != UPSTREAM_SHA256 or Path(module.__file__) != path
+                or getattr(module, _PATCH_MARK, None) != RUNTIME_PATCH_ID
+                or getattr(module, _RUNTIME_SHA_MARK, None) != runtime_sha):
             raise UpstreamLossMissing(f"{UPSTREAM_MODULE} was imported from {getattr(module, '__file__', None)} "
-                                      f"without the sha256 check; import it only through PhysFormerLossAdapter")
+                                      f"without the same sha256 check and runtime patch; import it only through PhysFormerLossAdapter")
         return module.TorchLossComputer
     module = types.ModuleType(UPSTREAM_MODULE)
     module.__file__ = str(path)
     module.__package__ = UPSTREAM_MODULE.rpartition(".")[0]
     setattr(module, _VERIFIED_MARK, UPSTREAM_SHA256)
-    code = compile(data, str(path), "exec", dont_inherit=True)
+    setattr(module, _PATCH_MARK, RUNTIME_PATCH_ID)
+    setattr(module, _RUNTIME_SHA_MARK, runtime_sha)
+    code = compile(runtime_data, str(path), "exec", dont_inherit=True)
     sys.modules[UPSTREAM_MODULE] = module
     try:
-        exec(code, module.__dict__)  # noqa: S102 (the pinned upstream file, sha256-verified just above)
+        exec(code, module.__dict__)  # noqa: S102 (SHA-pinned source with the single named runtime patch)
+        _record_runtime(path, runtime_sha)
     except BaseException:
         sys.modules.pop(UPSTREAM_MODULE, None)
         raise

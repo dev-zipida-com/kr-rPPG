@@ -1,7 +1,4 @@
-"""Public-repository checks: no trained KR-rPPG weights are listed or offered (the manifest holds only the
-official rPPG-Toolbox weights, linked with sha256), the reader-facing documents carry no TODO markers and no
-instructions to download weights from GitHub, and the dataset is described as licensed under CC BY-NC 4.0, with none
-of the earlier access-procedure wording left."""
+"""Check the official-weight manifest, minimal README, and retained license/attribution notices."""
 
 import csv
 import re
@@ -12,8 +9,7 @@ import pytest
 REPO = Path(__file__).resolve().parents[1]
 MANIFEST = REPO / "checkpoints" / "checkpoints_manifest.csv"
 PUBLIC_COLUMNS = ["file", "architecture", "training_data", "bytes", "sha256", "n_params"]
-DOCS = ("README.md", "CITATION.cff", "LICENSES.md", "THIRD_PARTY_NOTICES.md", "checkpoints/README.md",
-        "privacy/README.md", "release_builder/README.md", "third_party/rPPG-Toolbox/README.md",
+DOCS = ("README.md", "LICENSES.md", "THIRD_PARTY_NOTICES.md", "third_party/rPPG-Toolbox/README.md",
         "third_party/rPPG-Toolbox/NOTICE.md", "third_party/rPPG-Toolbox/USE_RESTRICTIONS.md")
 # Wording that would list or offer KR-rPPG-trained weights (the public repository offers none).
 WEIGHT_OFFERS = (r"\bon request\b", r"available under the dua",
@@ -57,11 +53,9 @@ def test_manifest_values_are_well_formed():
     assert len({row["file"] for row in rows}) == len(rows)
 
 
-def test_readme_names_the_repository_url_of_citation_cff():
-    cff = (REPO / "CITATION.cff").read_text(encoding="utf-8")
-    match = re.search(r'^repository-code: "(https://github\.com/[\w.-]+/[\w.-]+)"$', cff, flags=re.MULTILINE)
-    assert match, "repository-code missing in CITATION.cff"
-    assert match.group(1) in (REPO / "README.md").read_text(encoding="utf-8")
+def test_readme_contains_only_the_requested_title():
+    assert (REPO / "README.md").read_text(encoding="utf-8") == "# KR-rPPG dataset reproduction\n"
+    assert not (REPO / "CITATION.cff").exists()
 
 
 @pytest.mark.parametrize("doc", DOCS)
@@ -90,12 +84,13 @@ def test_no_controlled_access_wording_for_the_dataset(doc):
     assert not found, found
 
 
-@pytest.mark.parametrize("doc", ("README.md", "LICENSES.md", "THIRD_PARTY_NOTICES.md"))
+@pytest.mark.parametrize("doc", ("LICENSES.md", "THIRD_PARTY_NOTICES.md"))
 def test_dataset_licence_is_stated(doc):
     assert DATASET_LICENCE in (REPO / doc).read_text(encoding="utf-8")
 
 
-def test_citation_cff_keeps_mit_for_code_and_cc_by_nc_for_the_dataset():
-    cff = (REPO / "CITATION.cff").read_text(encoding="utf-8")
-    assert re.search(r"^license: MIT$", cff, flags=re.MULTILINE)
-    assert re.search(r"^    license: CC-BY-NC-4\.0$", cff, flags=re.MULTILINE)
+def test_code_and_toolbox_keep_their_separate_licenses():
+    assert "MIT License" in (REPO / "LICENSE").read_text(encoding="utf-8")
+    toolbox = REPO / "third_party" / "rPPG-Toolbox"
+    assert "Responsible Artificial Intelligence Source Code License" in (toolbox / "LICENSE").read_text()
+    assert "Section 3.2" in (toolbox / "USE_RESTRICTIONS.md").read_text()

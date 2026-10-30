@@ -1,0 +1,1534 @@
+{
+  "schema_version": "release-basis-v1",
+  "generated_utc": "2026-10-27T04:09:19.375429+00:00",
+  "script": {
+    "path": "summarize_release_benchmark.py",
+    "size_bytes": 21619,
+    "sha256": "fc9e97553096f7305540510dc103739fbe6caad8d1754157702c63249e0fc523"
+  },
+  "kr_reference": {
+    "path": "reference_hr.csv",
+    "size_bytes": 224779,
+    "sha256": "1ee0e805cd956d2c5f3171c469d4b8f0f472ad737142817bbc42d3e2bf0629dc"
+  },
+  "model_order": [
+    "physnet",
+    "physformer",
+    "deepphys",
+    "tscan",
+    "efficientphys"
+  ],
+  "model_display_order": [
+    "PhysNet",
+    "PhysFormer",
+    "DeepPhys",
+    "TS-CAN",
+    "EfficientPhys"
+  ],
+  "aggregation_definitions": {
+    "internal": "mean session absolute error within each participant, then mean across participants",
+    "outgoing": "mean session absolute error within each of five fold models, then arithmetic mean of the five fold means",
+    "incoming": "mean absolute error over all released KR-rPPG sessions; one trained checkpoint per architecture"
+  },
+  "complete_table8_family_set": true,
+  "missing_families": [],
+  "versions": {
+    "python": "3.10.12",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3"
+  },
+  "families": {
+    "kr_kfold": {
+      "training_set": "KR-rPPG",
+      "test_set": "KR-rPPG",
+      "kind": "internal",
+      "aggregation": "mean session absolute error within each participant, then mean across participants",
+      "models": {
+        "physnet": {
+          "display_name": "PhysNet",
+          "mae": 1.5195898107580237,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 1.4587507035270155,
+          "session_median_ae": 0.0,
+          "n_gt5": 64,
+          "pct_gt5": 5.4888507718696395
+        },
+        "physformer": {
+          "display_name": "PhysFormer",
+          "mae": 1.9883026947846283,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 1.9353274415737565,
+          "session_median_ae": 0.0,
+          "n_gt5": 91,
+          "pct_gt5": 7.804459691252144
+        },
+        "deepphys": {
+          "display_name": "DeepPhys",
+          "mae": 12.03361717430321,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 11.970009648370498,
+          "session_median_ae": 0.0,
+          "n_gt5": 430,
+          "pct_gt5": 36.87821612349914
+        },
+        "tscan": {
+          "display_name": "TS-CAN",
+          "mae": 7.503488901499155,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 7.505000067002573,
+          "session_median_ae": 0.0,
+          "n_gt5": 290,
+          "pct_gt5": 24.871355060034304
+        },
+        "efficientphys": {
+          "display_name": "EfficientPhys",
+          "mae": 5.326080322265625,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 5.304530881485849,
+          "session_median_ae": 0.0,
+          "n_gt5": 191,
+          "pct_gt5": 16.380789022298455
+        }
+      }
+    },
+    "kr_to_pure": {
+      "training_set": "KR-rPPG",
+      "test_set": "PURE",
+      "kind": "outgoing",
+      "aggregation": "mean session absolute error within each of five fold models, then arithmetic mean of the five fold means",
+      "models": {
+        "physnet": {
+          "display_name": "PhysNet",
+          "mae": 6.862917108050849,
+          "n_prediction_rows": 295,
+          "n_unique_sessions": 59,
+          "n_unique_participants": 10,
+          "session_pooled_mean": 6.862917108050848,
+          "session_median_ae": 0.0,
+          "n_gt5": 42,
+          "pct_gt5": 14.237288135593221,
+          "fold_maes": {
+            "0": 5.697993908898305,
+            "1": 8.178297139830509,
+            "2": 7.314287605932203,
+            "3": 5.839512711864407,
+            "4": 7.284494173728813
+          },
+          "n_sessions_per_fold": {
+            "0": 59,
+            "1": 59,
+            "2": 59,
+            "3": 59,
+            "4": 59
+          },
+          "fold_mae_sample_sd": 1.0625546803253816,
+          "fold_mae_min": 5.697993908898305,
+          "fold_mae_max": 8.178297139830509,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "physformer": {
+          "display_name": "PhysFormer",
+          "mae": 10.832891949152543,
+          "n_prediction_rows": 295,
+          "n_unique_sessions": 59,
+          "n_unique_participants": 10,
+          "session_pooled_mean": 10.832891949152541,
+          "session_median_ae": 0.0,
+          "n_gt5": 78,
+          "pct_gt5": 26.440677966101696,
+          "fold_maes": {
+            "0": 13.302767478813559,
+            "1": 8.26022907838983,
+            "2": 8.908236228813559,
+            "3": 13.18359375,
+            "4": 10.509633209745763
+          },
+          "n_sessions_per_fold": {
+            "0": 59,
+            "1": 59,
+            "2": 59,
+            "3": 59,
+            "4": 59
+          },
+          "fold_mae_sample_sd": 2.348056333947465,
+          "fold_mae_min": 8.26022907838983,
+          "fold_mae_max": 13.302767478813559,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "deepphys": {
+          "display_name": "DeepPhys",
+          "mae": 5.905058262711865,
+          "n_prediction_rows": 295,
+          "n_unique_sessions": 59,
+          "n_unique_participants": 10,
+          "session_pooled_mean": 5.905058262711864,
+          "session_median_ae": 0.0,
+          "n_gt5": 37,
+          "pct_gt5": 12.54237288135593,
+          "fold_maes": {
+            "0": 3.746524099576271,
+            "1": 5.370266154661017,
+            "2": 7.00145656779661,
+            "3": 6.2044822563559325,
+            "4": 7.202562235169491
+          },
+          "n_sessions_per_fold": {
+            "0": 59,
+            "1": 59,
+            "2": 59,
+            "3": 59,
+            "4": 59
+          },
+          "fold_mae_sample_sd": 1.4071720632320281,
+          "fold_mae_min": 3.746524099576271,
+          "fold_mae_max": 7.202562235169491,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "tscan": {
+          "display_name": "TS-CAN",
+          "mae": 0.49606064618644063,
+          "n_prediction_rows": 295,
+          "n_unique_sessions": 59,
+          "n_unique_participants": 10,
+          "session_pooled_mean": 0.4960606461864407,
+          "session_median_ae": 0.0,
+          "n_gt5": 8,
+          "pct_gt5": 2.711864406779661,
+          "fold_maes": {
+            "0": 0.3947629766949153,
+            "1": 0.5735235699152542,
+            "2": 0.3947629766949153,
+            "3": 0.5735235699152542,
+            "4": 0.5437301377118644
+          },
+          "n_sessions_per_fold": {
+            "0": 59,
+            "1": 59,
+            "2": 59,
+            "3": 59,
+            "4": 59
+          },
+          "fold_mae_sample_sd": 0.09326819556573537,
+          "fold_mae_min": 0.3947629766949153,
+          "fold_mae_max": 0.5735235699152542,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "efficientphys": {
+          "display_name": "EfficientPhys",
+          "mae": 2.4460407838983054,
+          "n_prediction_rows": 295,
+          "n_unique_sessions": 59,
+          "n_unique_participants": 10,
+          "session_pooled_mean": 2.446040783898305,
+          "session_median_ae": 0.0,
+          "n_gt5": 13,
+          "pct_gt5": 4.406779661016949,
+          "fold_maes": {
+            "0": 1.72801906779661,
+            "1": 1.951469809322034,
+            "2": 1.9663665254237288,
+            "3": 3.418796345338983,
+            "4": 3.1655521716101696
+          },
+          "n_sessions_per_fold": {
+            "0": 59,
+            "1": 59,
+            "2": 59,
+            "3": 59,
+            "4": 59
+          },
+          "fold_mae_sample_sd": 0.7832932157389885,
+          "fold_mae_min": 1.72801906779661,
+          "fold_mae_max": 3.418796345338983,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        }
+      }
+    },
+    "kr_to_ubfc_rppg": {
+      "training_set": "KR-rPPG",
+      "test_set": "UBFC-rPPG",
+      "kind": "outgoing",
+      "aggregation": "mean session absolute error within each of five fold models, then arithmetic mean of the five fold means",
+      "models": {
+        "physnet": {
+          "display_name": "PhysNet",
+          "mae": 5.754743303571429,
+          "n_prediction_rows": 210,
+          "n_unique_sessions": 42,
+          "n_unique_participants": 42,
+          "session_pooled_mean": 5.754743303571429,
+          "session_median_ae": 0.0,
+          "n_gt5": 47,
+          "pct_gt5": 22.380952380952383,
+          "fold_maes": {
+            "0": 7.345145089285714,
+            "1": 5.754743303571429,
+            "2": 3.3272879464285716,
+            "3": 6.759207589285714,
+            "4": 5.587332589285714
+          },
+          "n_sessions_per_fold": {
+            "0": 42,
+            "1": 42,
+            "2": 42,
+            "3": 42,
+            "4": 42
+          },
+          "fold_mae_sample_sd": 1.537765603030734,
+          "fold_mae_min": 3.3272879464285716,
+          "fold_mae_max": 7.345145089285714,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "physformer": {
+          "display_name": "PhysFormer",
+          "mae": 2.4567522321428568,
+          "n_prediction_rows": 210,
+          "n_unique_sessions": 42,
+          "n_unique_participants": 42,
+          "session_pooled_mean": 2.456752232142857,
+          "session_median_ae": 0.0,
+          "n_gt5": 35,
+          "pct_gt5": 16.666666666666664,
+          "fold_maes": {
+            "0": 2.3228236607142856,
+            "1": 2.3228236607142856,
+            "2": 2.2181919642857144,
+            "3": 3.013392857142857,
+            "4": 2.406529017857143
+          },
+          "n_sessions_per_fold": {
+            "0": 42,
+            "1": 42,
+            "2": 42,
+            "3": 42,
+            "4": 42
+          },
+          "fold_mae_sample_sd": 0.31825928208908816,
+          "fold_mae_min": 2.2181919642857144,
+          "fold_mae_max": 3.013392857142857,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "deepphys": {
+          "display_name": "DeepPhys",
+          "mae": 1.6573660714285712,
+          "n_prediction_rows": 210,
+          "n_unique_sessions": 42,
+          "n_unique_participants": 42,
+          "session_pooled_mean": 1.6573660714285714,
+          "session_median_ae": 0.0,
+          "n_gt5": 19,
+          "pct_gt5": 9.047619047619047,
+          "fold_maes": {
+            "0": 1.0463169642857142,
+            "1": 2.260044642857143,
+            "2": 2.6785714285714284,
+            "3": 1.1509486607142858,
+            "4": 1.1509486607142858
+          },
+          "n_sessions_per_fold": {
+            "0": 42,
+            "1": 42,
+            "2": 42,
+            "3": 42,
+            "4": 42
+          },
+          "fold_mae_sample_sd": 0.7570303892522512,
+          "fold_mae_min": 1.0463169642857142,
+          "fold_mae_max": 2.6785714285714284,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "tscan": {
+          "display_name": "TS-CAN",
+          "mae": 1.7075892857142858,
+          "n_prediction_rows": 210,
+          "n_unique_sessions": 42,
+          "n_unique_participants": 42,
+          "session_pooled_mean": 1.7075892857142858,
+          "session_median_ae": 0.0,
+          "n_gt5": 25,
+          "pct_gt5": 11.904761904761903,
+          "fold_maes": {
+            "0": 1.611328125,
+            "1": 1.6950334821428572,
+            "2": 1.7159598214285714,
+            "3": 1.7159598214285714,
+            "4": 1.7996651785714286
+          },
+          "n_sessions_per_fold": {
+            "0": 42,
+            "1": 42,
+            "2": 42,
+            "3": 42,
+            "4": 42
+          },
+          "fold_mae_sample_sd": 0.06716018360441356,
+          "fold_mae_min": 1.611328125,
+          "fold_mae_max": 1.7996651785714286,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "efficientphys": {
+          "display_name": "EfficientPhys",
+          "mae": 3.4905133928571432,
+          "n_prediction_rows": 210,
+          "n_unique_sessions": 42,
+          "n_unique_participants": 42,
+          "session_pooled_mean": 3.490513392857143,
+          "session_median_ae": 0.0,
+          "n_gt5": 33,
+          "pct_gt5": 15.714285714285714,
+          "fold_maes": {
+            "0": 3.5574776785714284,
+            "1": 3.745814732142857,
+            "2": 3.4737723214285716,
+            "3": 2.8878348214285716,
+            "4": 3.7876674107142856
+          },
+          "n_sessions_per_fold": {
+            "0": 42,
+            "1": 42,
+            "2": 42,
+            "3": 42,
+            "4": 42
+          },
+          "fold_mae_sample_sd": 0.3610627451228896,
+          "fold_mae_min": 2.8878348214285716,
+          "fold_mae_max": 3.7876674107142856,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        }
+      }
+    },
+    "kr_to_mmpd": {
+      "training_set": "KR-rPPG",
+      "test_set": "MMPD",
+      "kind": "outgoing",
+      "aggregation": "mean session absolute error within each of five fold models, then arithmetic mean of the five fold means",
+      "models": {
+        "physnet": {
+          "display_name": "PhysNet",
+          "mae": 9.40630963740458,
+          "n_prediction_rows": 3275,
+          "n_unique_sessions": 655,
+          "n_unique_participants": 33,
+          "session_pooled_mean": 9.406309637404581,
+          "session_median_ae": 2.63671875,
+          "n_gt5": 1346,
+          "pct_gt5": 41.099236641221374,
+          "fold_maes": {
+            "0": 9.794101860687023,
+            "1": 9.501580391221374,
+            "2": 8.629383349236642,
+            "3": 9.688096374045802,
+            "4": 9.418386211832061
+          },
+          "n_sessions_per_fold": {
+            "0": 655,
+            "1": 655,
+            "2": 655,
+            "3": 655,
+            "4": 655
+          },
+          "fold_mae_sample_sd": 0.4589726001664975,
+          "fold_mae_min": 8.629383349236642,
+          "fold_mae_max": 9.794101860687023,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "physformer": {
+          "display_name": "PhysFormer",
+          "mae": 8.681715171755725,
+          "n_prediction_rows": 3275,
+          "n_unique_sessions": 655,
+          "n_unique_participants": 33,
+          "session_pooled_mean": 8.681715171755725,
+          "session_median_ae": 2.63671875,
+          "n_gt5": 1387,
+          "pct_gt5": 42.351145038167935,
+          "fold_maes": {
+            "0": 8.234881917938932,
+            "1": 9.037303196564885,
+            "2": 8.587786259541986,
+            "3": 9.349952290076336,
+            "4": 8.19865219465649
+          },
+          "n_sessions_per_fold": {
+            "0": 655,
+            "1": 655,
+            "2": 655,
+            "3": 655,
+            "4": 655
+          },
+          "fold_mae_sample_sd": 0.5036904125549866,
+          "fold_mae_min": 8.19865219465649,
+          "fold_mae_max": 9.349952290076336,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "deepphys": {
+          "display_name": "DeepPhys",
+          "mae": 22.21204079198473,
+          "n_prediction_rows": 3275,
+          "n_unique_sessions": 655,
+          "n_unique_participants": 33,
+          "session_pooled_mean": 22.212040791984734,
+          "session_median_ae": 18.45703125,
+          "n_gt5": 2173,
+          "pct_gt5": 66.35114503816794,
+          "fold_maes": {
+            "0": 21.576812977099237,
+            "1": 22.58185233778626,
+            "2": 22.352397423664122,
+            "3": 22.010227814885496,
+            "4": 22.53891340648855
+          },
+          "n_sessions_per_fold": {
+            "0": 655,
+            "1": 655,
+            "2": 655,
+            "3": 655,
+            "4": 655
+          },
+          "fold_mae_sample_sd": 0.4205796964033444,
+          "fold_mae_min": 21.576812977099237,
+          "fold_mae_max": 22.58185233778626,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "tscan": {
+          "display_name": "TS-CAN",
+          "mae": 16.174558683206108,
+          "n_prediction_rows": 3275,
+          "n_unique_sessions": 655,
+          "n_unique_participants": 33,
+          "session_pooled_mean": 16.174558683206108,
+          "session_median_ae": 6.15234375,
+          "n_gt5": 1758,
+          "pct_gt5": 53.6793893129771,
+          "fold_maes": {
+            "0": 16.10075739503817,
+            "1": 16.06989503816794,
+            "2": 16.08197161259542,
+            "3": 16.428166746183205,
+            "4": 16.192002624045802
+          },
+          "n_sessions_per_fold": {
+            "0": 655,
+            "1": 655,
+            "2": 655,
+            "3": 655,
+            "4": 655
+          },
+          "fold_mae_sample_sd": 0.1496619649837638,
+          "fold_mae_min": 16.06989503816794,
+          "fold_mae_max": 16.428166746183205,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "efficientphys": {
+          "display_name": "EfficientPhys",
+          "mae": 15.474117366412212,
+          "n_prediction_rows": 3275,
+          "n_unique_sessions": 655,
+          "n_unique_participants": 33,
+          "session_pooled_mean": 15.474117366412214,
+          "session_median_ae": 5.2734375,
+          "n_gt5": 1658,
+          "pct_gt5": 50.62595419847328,
+          "fold_maes": {
+            "0": 15.737118320610687,
+            "1": 15.315780057251908,
+            "2": 15.396290553435115,
+            "3": 15.056804627862595,
+            "4": 15.864593272900763
+          },
+          "n_sessions_per_fold": {
+            "0": 655,
+            "1": 655,
+            "2": 655,
+            "3": 655,
+            "4": 655
+          },
+          "fold_mae_sample_sd": 0.3266950311465733,
+          "fold_mae_min": 15.056804627862595,
+          "fold_mae_max": 15.864593272900763,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        }
+      }
+    },
+    "kr_to_ubfc_phys": {
+      "training_set": "KR-rPPG",
+      "test_set": "UBFC-Phys",
+      "kind": "outgoing",
+      "aggregation": "mean session absolute error within each of five fold models, then arithmetic mean of the five fold means",
+      "models": {
+        "physnet": {
+          "display_name": "PhysNet",
+          "mae": 5.211217899133663,
+          "n_prediction_rows": 505,
+          "n_unique_sessions": 101,
+          "n_unique_participants": 48,
+          "session_pooled_mean": 5.211217899133663,
+          "session_median_ae": 1.79443359375,
+          "n_gt5": 164,
+          "pct_gt5": 32.475247524752476,
+          "fold_maes": {
+            "0": 5.08634359529703,
+            "1": 5.066038830445544,
+            "2": 5.24370552289604,
+            "3": 5.2056340887995045,
+            "4": 5.454367458230198
+          },
+          "n_sessions_per_fold": {
+            "0": 101,
+            "1": 101,
+            "2": 101,
+            "3": 101,
+            "4": 101
+          },
+          "fold_mae_sample_sd": 0.1556268666299672,
+          "fold_mae_min": 5.066038830445544,
+          "fold_mae_max": 5.454367458230198,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "physformer": {
+          "display_name": "PhysFormer",
+          "mae": 5.94015895730198,
+          "n_prediction_rows": 505,
+          "n_unique_sessions": 101,
+          "n_unique_participants": 48,
+          "session_pooled_mean": 5.94015895730198,
+          "session_median_ae": 2.05078125,
+          "n_gt5": 171,
+          "pct_gt5": 33.86138613861387,
+          "fold_maes": {
+            "0": 5.883305615717822,
+            "1": 5.487362701113861,
+            "2": 5.670105584777228,
+            "3": 6.469605700804456,
+            "4": 6.190415184096534
+          },
+          "n_sessions_per_fold": {
+            "0": 101,
+            "1": 101,
+            "2": 101,
+            "3": 101,
+            "4": 101
+          },
+          "fold_mae_sample_sd": 0.39500873703440975,
+          "fold_mae_min": 5.487362701113861,
+          "fold_mae_max": 6.469605700804456,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "deepphys": {
+          "display_name": "DeepPhys",
+          "mae": 9.759485225866337,
+          "n_prediction_rows": 505,
+          "n_unique_sessions": 101,
+          "n_unique_participants": 48,
+          "session_pooled_mean": 9.759485225866337,
+          "session_median_ae": 3.5888671875,
+          "n_gt5": 214,
+          "pct_gt5": 42.37623762376238,
+          "fold_maes": {
+            "0": 9.555929958230198,
+            "1": 8.411248839727723,
+            "2": 9.845272857363861,
+            "3": 10.604163443688119,
+            "4": 10.380811030321782
+          },
+          "n_sessions_per_fold": {
+            "0": 101,
+            "1": 101,
+            "2": 101,
+            "3": 101,
+            "4": 101
+          },
+          "fold_mae_sample_sd": 0.8611130391175821,
+          "fold_mae_min": 8.411248839727723,
+          "fold_mae_max": 10.604163443688119,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "tscan": {
+          "display_name": "TS-CAN",
+          "mae": 6.704125734839108,
+          "n_prediction_rows": 505,
+          "n_unique_sessions": 101,
+          "n_unique_participants": 48,
+          "session_pooled_mean": 6.704125734839109,
+          "session_median_ae": 2.05078125,
+          "n_gt5": 182,
+          "pct_gt5": 36.039603960396036,
+          "fold_maes": {
+            "0": 6.347777111695544,
+            "1": 6.832553372524752,
+            "2": 6.464529509591584,
+            "3": 5.850310372834159,
+            "4": 8.025458307549505
+          },
+          "n_sessions_per_fold": {
+            "0": 101,
+            "1": 101,
+            "2": 101,
+            "3": 101,
+            "4": 101
+          },
+          "fold_mae_sample_sd": 0.8178943682701039,
+          "fold_mae_min": 5.850310372834159,
+          "fold_mae_max": 8.025458307549505,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        },
+        "efficientphys": {
+          "display_name": "EfficientPhys",
+          "mae": 6.593972385519803,
+          "n_prediction_rows": 505,
+          "n_unique_sessions": 101,
+          "n_unique_participants": 48,
+          "session_pooled_mean": 6.593972385519802,
+          "session_median_ae": 2.30712890625,
+          "n_gt5": 186,
+          "pct_gt5": 36.83168316831683,
+          "fold_maes": {
+            "0": 7.139662940903466,
+            "1": 6.347777111695544,
+            "2": 6.461991413985149,
+            "3": 6.2970151995668315,
+            "4": 6.72341526144802
+          },
+          "n_sessions_per_fold": {
+            "0": 101,
+            "1": 101,
+            "2": 101,
+            "3": 101,
+            "4": 101
+          },
+          "fold_mae_sample_sd": 0.3466800759898233,
+          "fold_mae_min": 6.2970151995668315,
+          "fold_mae_max": 7.139662940903466,
+          "tail_denominator_note": "n_gt5 and pct_gt5 pool all five fold/session prediction rows, not distinct sessions"
+        }
+      }
+    },
+    "pure_to_kr": {
+      "training_set": "PURE",
+      "test_set": "KR-rPPG",
+      "kind": "incoming",
+      "aggregation": "mean absolute error over all released KR-rPPG sessions; one trained checkpoint per architecture",
+      "models": {
+        "physnet": {
+          "display_name": "PhysNet",
+          "mae": 12.810096282697256,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 12.810096282697256,
+          "session_median_ae": 1.7578125,
+          "n_gt5": 506,
+          "pct_gt5": 43.39622641509434
+        },
+        "physformer": {
+          "display_name": "PhysFormer",
+          "mae": 10.417413466177102,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 10.417413466177102,
+          "session_median_ae": 0.2197265625,
+          "n_gt5": 410,
+          "pct_gt5": 35.16295025728988
+        },
+        "deepphys": {
+          "display_name": "DeepPhys",
+          "mae": 16.24827049608705,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 16.24827049608705,
+          "session_median_ae": 3.515625,
+          "n_gt5": 575,
+          "pct_gt5": 49.313893653516296
+        },
+        "tscan": {
+          "display_name": "TS-CAN",
+          "mae": 11.950788285270155,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 11.950788285270155,
+          "session_median_ae": 0.87890625,
+          "n_gt5": 460,
+          "pct_gt5": 39.451114922813034
+        },
+        "efficientphys": {
+          "display_name": "EfficientPhys",
+          "mae": 11.786841364708405,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 11.786841364708405,
+          "session_median_ae": 0.0,
+          "n_gt5": 425,
+          "pct_gt5": 36.44939965694683
+        }
+      }
+    },
+    "ubfc_rppg_to_kr": {
+      "training_set": "UBFC-rPPG",
+      "test_set": "KR-rPPG",
+      "kind": "incoming",
+      "aggregation": "mean absolute error over all released KR-rPPG sessions; one trained checkpoint per architecture",
+      "models": {
+        "physnet": {
+          "display_name": "PhysNet",
+          "mae": 5.620929593696398,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 5.620929593696398,
+          "session_median_ae": 0.0,
+          "n_gt5": 290,
+          "pct_gt5": 24.871355060034304
+        },
+        "physformer": {
+          "display_name": "PhysFormer",
+          "mae": 6.958510331796741,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 6.958510331796741,
+          "session_median_ae": 0.0,
+          "n_gt5": 377,
+          "pct_gt5": 32.3327615780446
+        },
+        "deepphys": {
+          "display_name": "DeepPhys",
+          "mae": 15.76717108436964,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 15.76717108436964,
+          "session_median_ae": 2.63671875,
+          "n_gt5": 564,
+          "pct_gt5": 48.3704974271012
+        },
+        "tscan": {
+          "display_name": "TS-CAN",
+          "mae": 10.526711413218267,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 10.526711413218267,
+          "session_median_ae": 0.439453125,
+          "n_gt5": 435,
+          "pct_gt5": 37.307032590051456
+        },
+        "efficientphys": {
+          "display_name": "EfficientPhys",
+          "mae": 11.850535685570327,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 11.850535685570327,
+          "session_median_ae": 0.87890625,
+          "n_gt5": 460,
+          "pct_gt5": 39.451114922813034
+        }
+      }
+    },
+    "mmpd_to_kr": {
+      "training_set": "MMPD",
+      "test_set": "KR-rPPG",
+      "kind": "incoming",
+      "aggregation": "mean absolute error over all released KR-rPPG sessions; one trained checkpoint per architecture",
+      "models": {
+        "physnet": {
+          "display_name": "PhysNet",
+          "mae": 15.00962324453259,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 15.00962324453259,
+          "session_median_ae": 3.515625,
+          "n_gt5": 572,
+          "pct_gt5": 49.056603773584904
+        },
+        "physformer": {
+          "display_name": "PhysFormer",
+          "mae": 10.11006010130789,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 10.11006010130789,
+          "session_median_ae": 0.439453125,
+          "n_gt5": 417,
+          "pct_gt5": 35.763293310463126
+        },
+        "deepphys": {
+          "display_name": "DeepPhys",
+          "mae": 24.894868775460978,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 24.894868775460978,
+          "session_median_ae": 24.609375,
+          "n_gt5": 925,
+          "pct_gt5": 79.33104631217839
+        },
+        "tscan": {
+          "display_name": "TS-CAN",
+          "mae": 13.824682742817323,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 13.824682742817323,
+          "session_median_ae": 3.515625,
+          "n_gt5": 573,
+          "pct_gt5": 49.14236706689537
+        },
+        "efficientphys": {
+          "display_name": "EfficientPhys",
+          "mae": 12.714931690876929,
+          "n_prediction_rows": 1166,
+          "n_unique_sessions": 1166,
+          "n_unique_participants": 296,
+          "session_pooled_mean": 12.714931690876929,
+          "session_median_ae": 1.7578125,
+          "n_gt5": 526,
+          "pct_gt5": 45.1114922813036
+        }
+      }
+    }
+  },
+  "sources": {
+    "kr_kfold": {
+      "path": "kr_kfold.csv",
+      "size_bytes": 473379,
+      "sha256": "c571062f2ac4f92c1536f9835a4bf36109c75ce6c6e33cdaaf4fa297a80826a0",
+      "collector_provenance": {
+        "path": "kr_kfold.provenance.json",
+        "size_bytes": 12368,
+        "sha256": "ea4dd2ae5e36916931d9728a3c0ce6f6305d15e380582b9dd855f53e0d890ed5"
+      }
+    },
+    "kr_to_pure": {
+      "path": "kr_to_pure.csv",
+      "size_bytes": 123849,
+      "sha256": "e1a6bdf794a596f47c05344cdd39912b6bb48f5b0da0895fa63afcd8817cedf9",
+      "collector_provenance": {
+        "path": "kr_to_pure.provenance.json",
+        "size_bytes": 12508,
+        "sha256": "dac11cd5cb5611499a2795191855e201971cef84a6d7f9ffa5fe1144bd375d10"
+      }
+    },
+    "kr_to_ubfc_rppg": {
+      "path": "kr_to_ubfc_rppg.csv",
+      "size_bytes": 101681,
+      "sha256": "046eb03533edb9109668662495972c17a8cffca2c998539af6acd65a108c5b1c",
+      "collector_provenance": {
+        "path": "kr_to_ubfc_rppg.provenance.json",
+        "size_bytes": 12888,
+        "sha256": "a561465f12326f0b52e8e333549244ad68544f89a173e7389463e444d7467ec7"
+      }
+    },
+    "kr_to_mmpd": {
+      "path": "kr_to_mmpd.csv",
+      "size_bytes": 1428410,
+      "sha256": "6e600521bbff94b79c86e33400e8f120a86e5011ef493ed5bc4746cd73d346a6",
+      "collector_provenance": {
+        "path": "kr_to_mmpd.provenance.json",
+        "size_bytes": 12534,
+        "sha256": "fe9050ddca1e6a1c3864fc294a847af64f3a9d74f3deade2534f579cab7e4bb8"
+      }
+    },
+    "kr_to_ubfc_phys": {
+      "path": "kr_to_ubfc_phys.csv",
+      "size_bytes": 269443,
+      "sha256": "fcb20151842a4b08a332b39290dfff9e4364dcd293bc51677bcd7e02d33e9f60",
+      "collector_provenance": {
+        "path": "kr_to_ubfc_phys.provenance.json",
+        "size_bytes": 12913,
+        "sha256": "8b477d85961a96f776809a4edaa77bc4c82e33515bb82da023cee1e34aeac7fd"
+      }
+    },
+    "pure_to_kr": {
+      "path": "pure_to_kr.csv",
+      "size_bytes": 487864,
+      "sha256": "416e2fdc157cb4d6bf3472e9ebfd1ea8e2517f510b9a4c9af2c925843670f7c8",
+      "collector_provenance": {
+        "path": "pure_to_kr.provenance.json",
+        "size_bytes": 4012,
+        "sha256": "bf128fed80bc9b8d9ca232fde105b777ff37c3a8bd41999b37896c99a61f2088"
+      }
+    },
+    "ubfc_rppg_to_kr": {
+      "path": "ubfc_rppg_to_kr.csv",
+      "size_bytes": 515381,
+      "sha256": "f7f1a782d91b7b14130df08474f8d30409bf1276c09465e405a88b851b8f25ba",
+      "collector_provenance": {
+        "path": "ubfc_rppg_to_kr.provenance.json",
+        "size_bytes": 4112,
+        "sha256": "56c567d0ccb2a00e218c1e92b046588cff38c190f5cf510eeab329cfcb3a7f25"
+      }
+    },
+    "mmpd_to_kr": {
+      "path": "mmpd_to_kr_eval.csv",
+      "size_bytes": 521250,
+      "sha256": "5ec3fa55f71d9aa41659cb6e092e127297293cf7ce647b8e49643d4383b08e48",
+      "collector_provenance": {
+        "path": "mmpd_to_kr_eval.provenance.json",
+        "size_bytes": 4272,
+        "sha256": "ed1d742aec6d2dc2dde9a583c7f4c992d40737cbafbb7dcd3676c73d4542986b"
+      }
+    }
+  },
+  "scope_checks": {
+    "kr_kfold": {
+      "reference_sessions": 1166,
+      "rows": 5830,
+      "models": {
+        "physnet": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "physformer": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "deepphys": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "tscan": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "efficientphys": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      },
+      "abs_error_max_difference": 0.0,
+      "fixed_session_set_and_reference_match": true,
+      "collector_final_scope": true,
+      "reference": {
+        "path": "reference_hr.csv",
+        "size_bytes": 224779,
+        "sha256": "1ee0e805cd956d2c5f3171c469d4b8f0f472ad737142817bbc42d3e2bf0629dc"
+      }
+    },
+    "kr_to_pure": {
+      "reference_sessions": 59,
+      "rows": 1475,
+      "models": {
+        "physnet": {
+          "rows": 295,
+          "sessions": 59,
+          "participants": 10,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "physformer": {
+          "rows": 295,
+          "sessions": 59,
+          "participants": 10,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "deepphys": {
+          "rows": 295,
+          "sessions": 59,
+          "participants": 10,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "tscan": {
+          "rows": 295,
+          "sessions": 59,
+          "participants": 10,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "efficientphys": {
+          "rows": 295,
+          "sessions": 59,
+          "participants": 10,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      },
+      "abs_error_max_difference": 0.0,
+      "fixed_session_set_and_reference_match": true,
+      "collector_final_scope": true,
+      "reference": {
+        "path": "pure_reference_hr.csv",
+        "size_bytes": 2223,
+        "sha256": "4ee6053f7992076ece93edbb01030a1312a00b3b5ae2f45eff8e6720e71dcb76"
+      }
+    },
+    "kr_to_ubfc_rppg": {
+      "reference_sessions": 42,
+      "rows": 1050,
+      "models": {
+        "physnet": {
+          "rows": 210,
+          "sessions": 42,
+          "participants": 42,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "physformer": {
+          "rows": 210,
+          "sessions": 42,
+          "participants": 42,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "deepphys": {
+          "rows": 210,
+          "sessions": 42,
+          "participants": 42,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "tscan": {
+          "rows": 210,
+          "sessions": 42,
+          "participants": 42,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "efficientphys": {
+          "rows": 210,
+          "sessions": 42,
+          "participants": 42,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      },
+      "abs_error_max_difference": 0.0,
+      "fixed_session_set_and_reference_match": true,
+      "collector_final_scope": true,
+      "reference": {
+        "path": "ubfc_rppg_reference_hr.csv",
+        "size_bytes": 1953,
+        "sha256": "7753596c76b1d79991d6a0daab4d56b954ffdbf09d000ab98ca5bfdca0bf22cb"
+      }
+    },
+    "kr_to_mmpd": {
+      "reference_sessions": 655,
+      "rows": 16375,
+      "models": {
+        "physnet": {
+          "rows": 3275,
+          "sessions": 655,
+          "participants": 33,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "physformer": {
+          "rows": 3275,
+          "sessions": 655,
+          "participants": 33,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "deepphys": {
+          "rows": 3275,
+          "sessions": 655,
+          "participants": 33,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "tscan": {
+          "rows": 3275,
+          "sessions": 655,
+          "participants": 33,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "efficientphys": {
+          "rows": 3275,
+          "sessions": 655,
+          "participants": 33,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      },
+      "abs_error_max_difference": 0.0,
+      "fixed_session_set_and_reference_match": true,
+      "collector_final_scope": true,
+      "reference": {
+        "path": "mmpd_reference_hr.csv",
+        "size_bytes": 24720,
+        "sha256": "b7d1589703e91f0e5ed21cac816a325b61fb85a8bd552ad6b059c0cc607609da"
+      }
+    },
+    "kr_to_ubfc_phys": {
+      "reference_sessions": 101,
+      "rows": 2525,
+      "models": {
+        "physnet": {
+          "rows": 505,
+          "sessions": 101,
+          "participants": 48,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "physformer": {
+          "rows": 505,
+          "sessions": 101,
+          "participants": 48,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "deepphys": {
+          "rows": 505,
+          "sessions": 101,
+          "participants": 48,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "tscan": {
+          "rows": 505,
+          "sessions": 101,
+          "participants": 48,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "efficientphys": {
+          "rows": 505,
+          "sessions": 101,
+          "participants": 48,
+          "folds": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      },
+      "abs_error_max_difference": 0.0,
+      "fixed_session_set_and_reference_match": true,
+      "collector_final_scope": true,
+      "reference": {
+        "path": "ubfc_phys_reference_hr.csv",
+        "size_bytes": 4796,
+        "sha256": "5ddec0bdf42a273a97c13716b68e0b42671ae057a94539392e35668c3ab3b37d"
+      }
+    },
+    "pure_to_kr": {
+      "reference_sessions": 1166,
+      "rows": 5830,
+      "models": {
+        "physnet": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "physformer": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "deepphys": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "tscan": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "efficientphys": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        }
+      },
+      "abs_error_max_difference": 0.0,
+      "fixed_session_set_and_reference_match": true,
+      "collector_final_scope": true,
+      "reference": {
+        "path": "reference_hr.csv",
+        "size_bytes": 224779,
+        "sha256": "1ee0e805cd956d2c5f3171c469d4b8f0f472ad737142817bbc42d3e2bf0629dc"
+      }
+    },
+    "ubfc_rppg_to_kr": {
+      "reference_sessions": 1166,
+      "rows": 5830,
+      "models": {
+        "physnet": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "physformer": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "deepphys": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "tscan": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "efficientphys": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        }
+      },
+      "abs_error_max_difference": 0.0,
+      "fixed_session_set_and_reference_match": true,
+      "collector_final_scope": true,
+      "reference": {
+        "path": "reference_hr.csv",
+        "size_bytes": 224779,
+        "sha256": "1ee0e805cd956d2c5f3171c469d4b8f0f472ad737142817bbc42d3e2bf0629dc"
+      }
+    },
+    "mmpd_to_kr": {
+      "reference_sessions": 1166,
+      "rows": 5830,
+      "models": {
+        "physnet": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "physformer": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "deepphys": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "tscan": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        },
+        "efficientphys": {
+          "rows": 1166,
+          "sessions": 1166,
+          "participants": 296,
+          "folds": [
+            ""
+          ]
+        }
+      },
+      "abs_error_max_difference": 0.0,
+      "fixed_session_set_and_reference_match": true,
+      "collector_final_scope": true,
+      "reference": {
+        "path": "reference_hr.csv",
+        "size_bytes": 224779,
+        "sha256": "1ee0e805cd956d2c5f3171c469d4b8f0f472ad737142817bbc42d3e2bf0629dc"
+      }
+    }
+  },
+  "figure3_outputs": {
+    "Figure3_data.csv": {
+      "path": "Figure3_data.csv",
+      "size_bytes": 3831,
+      "sha256": "d672a45911c5d64efc3948ba7fa51763a70a75c0442827acad8579f26dba03c4"
+    },
+    "figure3_values.json": {
+      "path": "figure3_values.json",
+      "size_bytes": 12764,
+      "sha256": "6abce2791b2fac5973d023d1b40f56e06b1893de9419c40945572229aa4bd048"
+    }
+  }
+}

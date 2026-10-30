@@ -1,6 +1,5 @@
 # Benchmark (rPPG-Toolbox adaptation, configs, analysis, tests) - Python 3.10.
-# Versions used to verify this repository and for the KR-rPPG -> UBFC-Phys evaluation; other manuscript runs
-# may have used other versions (README, caveat 8).
+# Versions used by the release-based benchmark environment; per-job provenance records actual execution.
 # CUDA 12.1 wheels:  pip install -r requirements-benchmark.txt --extra-index-url https://download.pytorch.org/whl/cu121
 torch==2.3.1
 torchvision==0.18.1

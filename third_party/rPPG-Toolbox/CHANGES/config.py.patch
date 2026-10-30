@@ -65,7 +65,7 @@
  
  # -----------------------------------------------------------------------------
  # Inference settings
-@@ -371,18 +394,43 @@
+@@ -371,10 +394,27 @@
  _C.LOG.PATH = "runs/exp"
  
  
@@ -84,16 +84,16 @@
      config.defrost()
      with open(cfg_file, 'r') as f:
          yaml_cfg = yaml.load(f, Loader=yaml.FullLoader)
- 
++
 +    # Expand environment variables (e.g., ${KR_RPPG_ROOT}) in all string values
 +    yaml_cfg = _expand_env_vars(yaml_cfg)
 +    _unresolved = sorted(set(re.findall(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}', yaml.safe_dump(yaml_cfg))))
 +    if _unresolved:
 +        raise ValueError(f'{cfg_file}: environment variable(s) not set: {", ".join(_unresolved)}')
-+
+ 
      for cfg in yaml_cfg.setdefault('BASE', ['']):
          if cfg:
-             _update_config_from_file(
+@@ -382,7 +422,15 @@
                  config, os.path.join(os.path.dirname(cfg_file), cfg)
              )
      print('=> Merging a config file from {}'.format(cfg_file))

@@ -1,0 +1,27 @@
+{
+  "schema_version": "publication-scope-v1",
+  "amended_utc": "2026-10-29",
+  "excluded_benchmark_families": [
+    "ubfc_phys_to_kr"
+  ],
+  "retained_benchmark_families": [
+    "kr_kfold",
+    "kr_to_pure",
+    "kr_to_ubfc_rppg",
+    "kr_to_mmpd",
+    "kr_to_ubfc_phys",
+    "pure_to_kr",
+    "ubfc_rppg_to_kr",
+    "mmpd_to_kr"
+  ],
+  "excluded_external_training_datasets": [
+    "ubfc_phys"
+  ],
+  "preserved": [
+    "KR-rPPG-trained -> UBFC-Phys evaluation",
+    "UBFC-Phys Table 7 reference statistics"
+  ],
+  "scope": "Publication subset only; historical completed runs remain archival evidence.",
+  "aggregation": "No metrics recomputed; only the excluded incoming family and its checkpoint entries were removed.",
+  "original_aggregate_provenance": "benchmark_metrics.json retains its original generation time and computation provenance; this scope file records the subsequent publication subset."
+}

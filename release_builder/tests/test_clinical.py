@@ -94,9 +94,7 @@ TABLE6_TEXT = {
     "htn": ("Hypertension", "0/1"),
     "dyslipidemia": ("Dyslipidemia", "0/1"),
     "ild": ("Interstitial lung disease (site C only; blank = not ascertained)", "0/1"),
-    "other_comorbidity_count": (("Number of positive indicators among cardiovascular disease, cerebrovascular "
-                                 "disease, cancer, renal disease, and lung disease; renal disease is also counted "
-                                 "when eGFR is below 15 mL/min/1.73 m^2"), "0-5 possible{observed}"),
+    "other_comorbidity_count": ('Binary indicator of any cardiovascular disease, cerebrovascular disease, cancer, renal disease, or lung disease; renal disease is also counted when eGFR is below 15 mL/min/1.73 m^2. The legacy column name is retained; values are not a disease count.', '0 = none; 1 = at least one; blank = not fully ascertained'),
 }
 # The former blanking rules are only counted ('..._flagged_unchanged'); the two corrections that add information
 # (eGFR computed from creatinine, eGFR < 15 counted as renal disease) are kept.
@@ -209,9 +207,9 @@ def test_plausible_ranges_are_sanity_limits_on_each_columns_grid():
     for column, (low, high) in PLAUSIBLE_RANGES.items():
         assert _is_numeric_cell(column, low) and _is_numeric_cell(column, high) and Decimal(low) < Decimal(high)
     assert {c: PLAUSIBLE_RANGES[c] for c in ("age", "height", "weight", "other_comorbidity_count")} == {
-        "age": ("0", "120"), "height": ("50", "250"), "weight": ("10", "300"), "other_comorbidity_count": ("0", "5")}
-    # the released height outside 120-210 cm (1.4.0) must pass; the count has five indicators, no top-coding
-    assert Decimal(PLAUSIBLE_RANGES["height"][0]) < 120 and PLAUSIBLE_RANGES["other_comorbidity_count"][1] == "5"
+        "age": ("0", "120"), "height": ("50", "250"), "weight": ("10", "300"), "other_comorbidity_count": ("0", "1")}
+    # the released height outside 120-210 cm (1.4.0) must pass; the legacy count column now permits only binary values
+    assert Decimal(PLAUSIBLE_RANGES["height"][0]) < 120 and PLAUSIBLE_RANGES["other_comorbidity_count"][1] == "1"
     # 1.4.0: the sbp and fpg lower bounds are not the former blanking thresholds
     assert PLAUSIBLE_RANGES["sbp"] == ("50", "300") and PLAUSIBLE_RANGES["fpg"] == ("10", "1000")
     assert Decimal(PLAUSIBLE_RANGES["sbp"][0]) < SBP_MIN_PLAUSIBLE
@@ -242,7 +240,7 @@ def test_rows_follow_the_table6_coding(fake_source):
     # C_p902: FPG 'ND' (missing); CRF eGFR '-' -> computed from creatinine; cerebrovascular disease and cancer
     assert rows["p003"] == {
         "participant_key": "p003", "site": "C", "sex": "M", "makeup": "1", "glasses": "1", "accessories": "1",
-        "dm": "1", "htn": "0", "dyslipidemia": "1", "ild": "1", "other_comorbidity_count": "2",
+        "dm": "1", "htn": "0", "dyslipidemia": "1", "ild": "1", "other_comorbidity_count": "1",
         **_expected_numbers("C_p902"),
     }
     assert int(rows["p001"]["height"]) > 210 and Decimal(rows["p001"]["dbp"]) > Decimal(rows["p001"]["sbp"])
@@ -424,10 +422,8 @@ def test_dictionary_spells_creatinine_and_keeps_the_kept_rule_notes():
     text = " ".join(" ".join(row) for row in DICTIONARY.values())
     assert "Serum creatinine" in text and not re.search(r"creatine\b", text)
     assert "CKD-EPI 2009" in DICTIONARY["gfr"][1] and "when the CRF value is missing" in DICTIONARY["gfr"][1]
-    assert DICTIONARY["other_comorbidity_count"][1].endswith("renal disease is also counted when eGFR is below "
-                                                             "15 mL/min/1.73 m^2")
-    # manuscript Usage Notes: the reference HR comes from BVP_synchronized.csv; HR_synchronized.csv is the device rate
-    assert "BVP_synchronized.csv" in DICTIONARY["hr_rest"][1] and "HR_synchronized.csv" in DICTIONARY["hr_rest"][1]
+    assert "renal disease is also counted when eGFR is below 15 mL/min/1.73 m^2" in DICTIONARY["other_comorbidity_count"][1]
+    assert "values are not a disease count" in DICTIONARY["other_comorbidity_count"][1]
     assert all("acute" not in " ".join(row).lower() for row in DICTIONARY.values())  # ild = interstitial lung disease
 
 
@@ -438,17 +434,14 @@ def test_dictionary_describes_no_rule_blanking_and_no_former_category():
         assert not any(phrase in text for phrase in CATEGORY_WORDING), column
 
 
-def test_observed_range_of_the_count_follows_the_rows():
+def test_binary_comorbidity_dictionary_keeps_missing_availability():
     rows = [[f"p{i:03d}"] + [""] * 23 for i in range(1, 4)]
-    count = PARTICIPANT_COLUMNS.index("other_comorbidity_count")
-    assert {row[0]: row[3] for row in participants_dictionary(rows)}["other_comorbidity_count"] == "0-5 possible"
-    for row, value in zip(rows, ("3", "0", "")):
-        row[count] = value
+    index = PARTICIPANT_COLUMNS.index("other_comorbidity_count")
+    for row, value in zip(rows, ("1", "0", "")):
+        row[index] = value
     dictionary = {row[0]: row for row in participants_dictionary(rows)}
-    assert dictionary["other_comorbidity_count"][3:] == ["0-5 possible (observed 0-3)", "2"]
-    rows[2][count] = ">=1"  # not a whole number (verify reports it): ignored for the observed range, not a crash
-    assert {row[0]: row[3] for row in participants_dictionary(rows)}["other_comorbidity_count"] == \
-        "0-5 possible (observed 0-3)"
+    assert dictionary["other_comorbidity_count"][3:] == [
+        "0 = none; 1 = at least one; blank = not fully ascertained", "2"]
 
 
 def test_quality_rule_counts(fake_source):
@@ -581,14 +574,14 @@ def test_implausible_hr_is_counted_but_not_changed(fake_source):
     assert _by_id(derive_rows(data, MAPPING))["p002"]["hr_rest"] == "220"
 
 
-def test_other_comorbidity_count_is_the_number_of_positive_items(fake_source):
+def test_other_comorbidity_count_is_binary_presence(fake_source):
     """The sum of the five 0/1 items, 0-5, no top-coding."""
     rows, _ = _rows_with(fake_source, C_p901={"other_cardiovascular": 1.0, "other_cancer": 1.0,
                                                     "other_lung": 1.0})
-    assert rows["p002"]["other_comorbidity_count"] == "3"
+    assert rows["p002"]["other_comorbidity_count"] == "1"
     names = ["other_cardiovascular", "other_cerebrovascular", "other_cancer", "other_renal", "other_lung"]
     frame = pd.DataFrame([[1.0] * 5, [0.0] * 5, [1.0, 0.0, 1.0, 0.0, 0.0]], columns=names)
-    assert other_comorbidity_count(frame).tolist() == [5.0, 0.0, 2.0]
+    assert other_comorbidity_count(frame).tolist() == [1.0, 0.0, 1.0]
 
 
 def test_other_comorbidity_count_is_blank_when_an_item_is_unknown(fake_source):

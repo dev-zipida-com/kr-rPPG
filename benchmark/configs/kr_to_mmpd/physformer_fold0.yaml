@@ -87,9 +87,9 @@ TEST:
       - 1
       - 2
 INFERENCE:
-  BATCH_SIZE: 32
+  BATCH_SIZE: 4
   EVALUATION_METHOD: FFT
   EVALUATION_WINDOW:
     USE_SMALLER_WINDOW: false
     WINDOW_SIZE: 10
-  MODEL_PATH: ${KR_RPPG_CHECKPOINTS}/kr_5fold/physformer/KFold_physformer_fold0_Epoch9.pth
+  MODEL_PATH: ${KR_RPPG_CHECKPOINTS}/kr_5fold/physformer/KFold_physformer_fold0_Best.pth

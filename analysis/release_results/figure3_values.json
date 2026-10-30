@@ -1,0 +1,451 @@
+{
+  "schema_version": "release-basis-v1",
+  "generated_utc": "2026-10-27T04:09:20.204612+00:00",
+  "script": "summarize_release_benchmark.py",
+  "script_sha256": "fc9e97553096f7305540510dc103739fbe6caad8d1754157702c63249e0fc523",
+  "source": {
+    "path": "kr_kfold.csv",
+    "size_bytes": 473379,
+    "sha256": "c571062f2ac4f92c1536f9835a4bf36109c75ce6c6e33cdaaf4fa297a80826a0",
+    "collector_provenance": {
+      "path": "kr_kfold.provenance.json",
+      "size_bytes": 12368,
+      "sha256": "ea4dd2ae5e36916931d9728a3c0ce6f6305d15e380582b9dd855f53e0d890ed5"
+    }
+  },
+  "method": {
+    "reference_hr": "Model-independent released raw BVP over protocol common_eval_frames; same scalar HR for every model; no old label HR read",
+    "session_error": "|pred_hr-reference_hr| in bpm",
+    "cell_mae": "mean session absolute error within each participant, then mean across participants",
+    "ci": "Percentile bootstrap over participant means sorted by participant_key; B=10000; fresh numpy.random.default_rng(42) per cell; rng.integers(0,n,size=(B,n)); linear percentiles 2.5/97.5",
+    "median_ae": "Median of per-session absolute errors",
+    "large_error": "AE >5 bpm; numerator and percentage over sessions",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "python": "3.10.12"
+  },
+  "structure": {
+    "rows": 5830,
+    "models": [
+      "physnet",
+      "physformer",
+      "deepphys",
+      "tscan",
+      "efficientphys"
+    ],
+    "rows_per_model": {
+      "physnet": 1166,
+      "physformer": 1166,
+      "deepphys": 1166,
+      "tscan": 1166,
+      "efficientphys": 1166
+    },
+    "participants": 296,
+    "sessions_per_task": {
+      "T00": 291,
+      "T01": 293,
+      "T02": 289,
+      "T03": 293
+    },
+    "duplicate_model_participant_task_rows": 0,
+    "participants_in_more_than_one_fold": 0,
+    "common_reference_identical_all_models": true
+  },
+  "figure_recommendation": {
+    "groups": [
+      "T00",
+      "T01",
+      "T02",
+      "T03"
+    ],
+    "model_order": [
+      "PhysNet",
+      "PhysFormer",
+      "DeepPhys",
+      "TS-CAN",
+      "EfficientPhys"
+    ],
+    "model_display_names": [
+      "PhysNet",
+      "PhysFormer",
+      "DeepPhys",
+      "TS-CAN",
+      "EfficientPhys"
+    ],
+    "task_labels": {
+      "T00": "Talking",
+      "T01": "Stationary rest",
+      "T02": "Yaw rotation",
+      "T03": "Pitch rotation"
+    },
+    "all_group": "Not plotted; retained as the Table8 internal-row anchor"
+  },
+  "values": {
+    "PhysNet": {
+      "All": {
+        "n_sessions": 1166,
+        "n_participants": 296,
+        "mae": 1.5195898107580237,
+        "ci95_lo": 0.9917852040883657,
+        "ci95_hi": 2.158480979300834,
+        "mae_session_avg": 1.4587507035270155,
+        "median_ae": 0.0,
+        "n_gt5": 64,
+        "pct_gt5": 5.4888507718696395,
+        "n_ge5": 64
+      },
+      "T00": {
+        "n_sessions": 291,
+        "n_participants": 291,
+        "mae": 0.5640403511597938,
+        "ci95_lo": 0.2386034149484536,
+        "ci95_hi": 1.0541589481314422,
+        "mae_session_avg": 0.5640403511597938,
+        "median_ae": 0.0,
+        "n_gt5": 4,
+        "pct_gt5": 1.3745704467353952,
+        "n_ge5": 4
+      },
+      "T01": {
+        "n_sessions": 293,
+        "n_participants": 293,
+        "mae": 0.595436486774744,
+        "ci95_lo": 0.20397824232081913,
+        "ci95_hi": 1.1323792128839592,
+        "mae_session_avg": 0.595436486774744,
+        "median_ae": 0.0,
+        "n_gt5": 5,
+        "pct_gt5": 1.7064846416382253,
+        "n_ge5": 5
+      },
+      "T02": {
+        "n_sessions": 289,
+        "n_participants": 289,
+        "mae": 2.220074610726644,
+        "ci95_lo": 1.3381271626297577,
+        "ci95_hi": 3.2358347750865053,
+        "mae_session_avg": 2.220074610726644,
+        "median_ae": 0.0,
+        "n_gt5": 24,
+        "pct_gt5": 8.304498269896193,
+        "n_ge5": 24
+      },
+      "T03": {
+        "n_sessions": 293,
+        "n_participants": 293,
+        "mae": 2.4597376279863483,
+        "ci95_lo": 1.6078284982935154,
+        "ci95_hi": 3.4676301194539247,
+        "mae_session_avg": 2.4597376279863483,
+        "median_ae": 0.0,
+        "n_gt5": 31,
+        "pct_gt5": 10.580204778156997,
+        "n_ge5": 31
+      }
+    },
+    "PhysFormer": {
+      "All": {
+        "n_sessions": 1166,
+        "n_participants": 296,
+        "mae": 1.9883026947846283,
+        "ci95_lo": 1.4044467822925464,
+        "ci95_hi": 2.672501641350823,
+        "mae_session_avg": 1.9353274415737565,
+        "median_ae": 0.0,
+        "n_gt5": 91,
+        "pct_gt5": 7.804459691252144,
+        "n_ge5": 91
+      },
+      "T00": {
+        "n_sessions": 291,
+        "n_participants": 291,
+        "mae": 0.7822567654639175,
+        "ci95_lo": 0.3382731958762887,
+        "ci95_hi": 1.365173969072165,
+        "mae_session_avg": 0.7822567654639175,
+        "median_ae": 0.0,
+        "n_gt5": 7,
+        "pct_gt5": 2.405498281786942,
+        "n_ge5": 7
+      },
+      "T01": {
+        "n_sessions": 293,
+        "n_participants": 293,
+        "mae": 0.8564086497440273,
+        "ci95_lo": 0.32546528370307165,
+        "ci95_hi": 1.5583712737308015,
+        "mae_session_avg": 0.8564086497440273,
+        "median_ae": 0.0,
+        "n_gt5": 7,
+        "pct_gt5": 2.3890784982935154,
+        "n_ge5": 7
+      },
+      "T02": {
+        "n_sessions": 289,
+        "n_participants": 289,
+        "mae": 2.7157899005190314,
+        "ci95_lo": 1.7851832828719723,
+        "ci95_hi": 3.774126838235294,
+        "mae_session_avg": 2.7157899005190314,
+        "median_ae": 0.0,
+        "n_gt5": 33,
+        "pct_gt5": 11.418685121107266,
+        "n_ge5": 33
+      },
+      "T03": {
+        "n_sessions": 293,
+        "n_participants": 293,
+        "mae": 3.389638438566553,
+        "ci95_lo": 2.4537382679180886,
+        "ci95_hi": 4.427677714377131,
+        "mae_session_avg": 3.389638438566553,
+        "median_ae": 0.0,
+        "n_gt5": 44,
+        "pct_gt5": 15.017064846416384,
+        "n_ge5": 44
+      }
+    },
+    "DeepPhys": {
+      "All": {
+        "n_sessions": 1166,
+        "n_participants": 296,
+        "mae": 12.03361717430321,
+        "ci95_lo": 10.754050177496833,
+        "ci95_hi": 13.383308616844383,
+        "mae_session_avg": 11.970009648370498,
+        "median_ae": 0.0,
+        "n_gt5": 430,
+        "pct_gt5": 36.87821612349914,
+        "n_ge5": 430
+      },
+      "T00": {
+        "n_sessions": 291,
+        "n_participants": 291,
+        "mae": 6.4453125,
+        "ci95_lo": 4.732728938466495,
+        "ci95_hi": 8.31797177029639,
+        "mae_session_avg": 6.4453125,
+        "median_ae": 0.0,
+        "n_gt5": 48,
+        "pct_gt5": 16.49484536082474,
+        "n_ge5": 48
+      },
+      "T01": {
+        "n_sessions": 293,
+        "n_participants": 293,
+        "mae": 1.7248160196245734,
+        "ci95_lo": 0.8549088097269625,
+        "ci95_hi": 2.812237527997013,
+        "mae_session_avg": 1.7248160196245734,
+        "median_ae": 0.0,
+        "n_gt5": 13,
+        "pct_gt5": 4.436860068259386,
+        "n_ge5": 13
+      },
+      "T02": {
+        "n_sessions": 289,
+        "n_participants": 289,
+        "mae": 19.16867160467128,
+        "ci95_lo": 16.91810898302336,
+        "ci95_hi": 21.44356381109429,
+        "mae_session_avg": 19.16867160467128,
+        "median_ae": 14.0625,
+        "n_gt5": 176,
+        "pct_gt5": 60.89965397923876,
+        "n_ge5": 176
+      },
+      "T03": {
+        "n_sessions": 293,
+        "n_participants": 293,
+        "mae": 20.60180247440273,
+        "ci95_lo": 18.38788862521331,
+        "ci95_hi": 22.839563779863482,
+        "mae_session_avg": 20.60180247440273,
+        "median_ae": 17.578125,
+        "n_gt5": 193,
+        "pct_gt5": 65.8703071672355,
+        "n_ge5": 193
+      }
+    },
+    "TS-CAN": {
+      "All": {
+        "n_sessions": 1166,
+        "n_participants": 296,
+        "mae": 7.503488901499155,
+        "ci95_lo": 6.542398607408678,
+        "ci95_hi": 8.502542650377428,
+        "mae_session_avg": 7.505000067002573,
+        "median_ae": 0.0,
+        "n_gt5": 290,
+        "pct_gt5": 24.871355060034304,
+        "n_ge5": 290
+      },
+      "T00": {
+        "n_sessions": 291,
+        "n_participants": 291,
+        "mae": 1.579615012886598,
+        "ci95_lo": 0.8502134342783505,
+        "ci95_hi": 2.464561855670103,
+        "mae_session_avg": 1.579615012886598,
+        "median_ae": 0.0,
+        "n_gt5": 12,
+        "pct_gt5": 4.123711340206185,
+        "n_ge5": 12
+      },
+      "T01": {
+        "n_sessions": 293,
+        "n_participants": 293,
+        "mae": 0.6494307273890785,
+        "ci95_lo": 0.25497280290102387,
+        "ci95_hi": 1.2658649744027304,
+        "mae_session_avg": 0.6494307273890785,
+        "median_ae": 0.0,
+        "n_gt5": 6,
+        "pct_gt5": 2.04778156996587,
+        "n_ge5": 6
+      },
+      "T02": {
+        "n_sessions": 289,
+        "n_participants": 289,
+        "mae": 12.027938473183392,
+        "ci95_lo": 10.029795293576989,
+        "ci95_hi": 14.13556478427768,
+        "mae_session_avg": 12.027938473183392,
+        "median_ae": 1.7578125,
+        "n_gt5": 112,
+        "pct_gt5": 38.75432525951557,
+        "n_ge5": 112
+      },
+      "T03": {
+        "n_sessions": 293,
+        "n_participants": 293,
+        "mae": 15.784316339590443,
+        "ci95_lo": 13.660242907423209,
+        "ci95_hi": 17.986081484641637,
+        "mae_session_avg": 15.784316339590443,
+        "median_ae": 7.03125,
+        "n_gt5": 160,
+        "pct_gt5": 54.60750853242321,
+        "n_ge5": 160
+      }
+    },
+    "EfficientPhys": {
+      "All": {
+        "n_sessions": 1166,
+        "n_participants": 296,
+        "mae": 5.326080322265625,
+        "ci95_lo": 4.390426841942039,
+        "ci95_hi": 6.33897523622255,
+        "mae_session_avg": 5.304530881485849,
+        "median_ae": 0.0,
+        "n_gt5": 191,
+        "pct_gt5": 16.380789022298455,
+        "n_ge5": 191
+      },
+      "T00": {
+        "n_sessions": 291,
+        "n_participants": 291,
+        "mae": 1.219444668170103,
+        "ci95_lo": 0.6387926868556701,
+        "ci95_hi": 1.9420694567493555,
+        "mae_session_avg": 1.219444668170103,
+        "median_ae": 0.0,
+        "n_gt5": 11,
+        "pct_gt5": 3.7800687285223367,
+        "n_ge5": 11
+      },
+      "T01": {
+        "n_sessions": 293,
+        "n_participants": 293,
+        "mae": 0.8174128093003413,
+        "ci95_lo": 0.30896704351535836,
+        "ci95_hi": 1.514875913235921,
+        "mae_session_avg": 0.8174128093003413,
+        "median_ae": 0.0,
+        "n_gt5": 7,
+        "pct_gt5": 2.3890784982935154,
+        "n_ge5": 7
+      },
+      "T02": {
+        "n_sessions": 289,
+        "n_participants": 289,
+        "mae": 9.199624243079585,
+        "ci95_lo": 7.289751838235294,
+        "ci95_hi": 11.203925848832178,
+        "mae_session_avg": 9.199624243079585,
+        "median_ae": 0.0,
+        "n_gt5": 83,
+        "pct_gt5": 28.719723183391004,
+        "n_ge5": 83
+      },
+      "T03": {
+        "n_sessions": 293,
+        "n_participants": 293,
+        "mae": 10.006932593856655,
+        "ci95_lo": 8.098986108148463,
+        "ci95_hi": 11.998720136518772,
+        "mae_session_avg": 10.006932593856655,
+        "median_ae": 0.0,
+        "n_gt5": 90,
+        "pct_gt5": 30.716723549488055,
+        "n_ge5": 90
+      }
+    }
+  },
+  "results_text_claims": {
+    "rotation_tasks_higher_mae_than_T00_T01_all_models": true,
+    "median_ae_zero_cells": "16/20",
+    "median_ae_nonzero_cells": [
+      {
+        "model": "DeepPhys",
+        "task": "T02",
+        "median_ae": 14.0625
+      },
+      {
+        "model": "DeepPhys",
+        "task": "T03",
+        "median_ae": 17.578125
+      },
+      {
+        "model": "TS-CAN",
+        "task": "T02",
+        "median_ae": 1.7578125
+      },
+      {
+        "model": "TS-CAN",
+        "task": "T03",
+        "median_ae": 7.03125
+      }
+    ],
+    "pct_gt5_ranges": {
+      "T00": [
+        1.3745704467353952,
+        16.49484536082474
+      ],
+      "T01": [
+        1.7064846416382253,
+        4.436860068259386
+      ],
+      "T02": [
+        8.304498269896193,
+        60.89965397923876
+      ],
+      "T03": [
+        10.580204778156997,
+        65.8703071672355
+      ]
+    },
+    "rise_pct_gt5_T01_to_T03_pp": {
+      "PhysNet": 8.873720136518772,
+      "PhysFormer": 12.627986348122867,
+      "DeepPhys": 61.43344709897611,
+      "TS-CAN": 52.55972696245734,
+      "EfficientPhys": 28.32764505119454
+    },
+    "frame_diff_rise_exceeds_spatiotemporal": true
+  },
+  "plotting_limits": {
+    "largest_task_ci95_hi": 22.839563779863482,
+    "note": "No fixed 0-25 bpm assertion; inspect new CI extent before rendering"
+  }
+}

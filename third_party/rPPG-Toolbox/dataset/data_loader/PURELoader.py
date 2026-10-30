@@ -14,10 +14,11 @@ import re
 import cv2
 import numpy as np
 from dataset.data_loader.BaseLoader import BaseLoader
+from dataset.data_loader.ExternalCompactLoader import ExternalCompactMixin
 from tqdm import tqdm
 
 
-class PURELoader(BaseLoader):
+class PURELoader(ExternalCompactMixin, BaseLoader):
     """The data loader for the PURE dataset."""
 
     def __init__(self, name, data_path, config_data, device=None):
@@ -41,7 +42,8 @@ class PURELoader(BaseLoader):
                 name(str): name of the dataloader.
                 config_data(CfgNode): data settings(ref:config.py).
         """
-        super().__init__(name, data_path, config_data, device)
+        if not self._init_external_compact(name, data_path, config_data):
+            super().__init__(name, data_path, config_data, device)
 
     def get_raw_data(self, data_path):
         """Returns data directories under the path(For PURE dataset)."""

@@ -18,8 +18,11 @@ the de-identified release (CC BY-NC 4.0, obtained from the KR-rPPG dataset recor
 
 Session index (used for cache and prediction names): "<pNNN>_<Txx>" (release ID and task).
 
-Faces are cropped with the median of the released per-frame face boxes (enlarged by
-LARGE_BOX_COEF) and the first 6 s of every session are skipped, as in the manuscript benchmark.
+Faces are cropped with the median of all finite valid released face boxes (including
+boxes before the first 6 s), enlarged by LARGE_BOX_COEF. Their row count does not
+truncate video/BVP. The first 180 video/BVP samples are skipped. Set
+KR_RPPG_COMPACT_ROOT to the lossless uint8 session cache to avoid large duplicate
+float32 clip caches; full-session normalization is reconstructed lazily.
 
 The environment variable KR_RPPG_VIDEO_FILE (optional) overrides the name of the video file in each
 session folder (default video_bfdt_ffv1.avi).
@@ -39,11 +42,13 @@ import glob
 import os
 import re
 import traceback
+from pathlib import Path
 
 import cv2
 import numpy as np
 import pandas as pd
 from dataset.data_loader.BaseLoader import BaseLoader
+from dataset.data_loader.CompactCache import CompactCache
 
 RELEASE_VIDEO = os.environ.get("KR_RPPG_VIDEO_FILE", "video_bfdt_ffv1.avi")
 BVP_FILE = "BVP_synchronized.csv"
@@ -64,7 +69,70 @@ class KoreanrPPGLoader(BaseLoader):
             data_path(str): path to the released KR-rPPG folder (the one holding pNNN/ and metadata/).
             config_data(CfgNode): data settings (ref: config.py).
         """
-        super().__init__(name, data_path, config_data, device)
+        compact_root = os.environ.get('KR_RPPG_COMPACT_ROOT', '')
+        self.compact_cache = None
+        if compact_root and not config_data.DO_PREPROCESS:
+            self._init_compact(name, data_path, config_data, compact_root)
+        else:
+            super().__init__(name, data_path, config_data, device)
+
+    def _init_compact(self, name, data_path, config_data, compact_root):
+        self.dataset_name = name
+        self.raw_data_path = data_path
+        self.config_data = config_data
+        self.cached_path = compact_root
+        self.file_list_path = str(Path(compact_root) / 'manifest.csv')
+        self.data_format = config_data.DATA_FORMAT
+        self.do_preprocess = False
+        manifest = pd.read_csv(self.file_list_path, dtype={'session': str, 'participant_key': str})
+        needed = {'session', 'participant_key', 'task', 'frames', 'start_frame', 'common_eval_frames'}
+        if not needed.issubset(manifest.columns) or manifest['session'].duplicated().any():
+            raise ValueError('Invalid or duplicate compact-cache manifest rows')
+        if (manifest['start_frame'] != 180).any():
+            raise ValueError('KR compact cache must skip exactly the first 180 frames')
+        entries = []
+        for row in manifest.to_dict('records'):
+            if row['session'] != f"{row['participant_key']}_{row['task']}":
+                raise ValueError('Compact session/participant/task mismatch')
+            n = int(row['frames'])
+            expected_end = min(n // c * c for c in (128, 160, 180))
+            if int(row['common_eval_frames']) != expected_end or expected_end <= 0:
+                raise ValueError(f"{row['session']}: invalid common evaluation endpoint")
+            entries.append({'index': row['session'], 'participant': row['participant_key'],
+                            'session': row['task'], 'path': str(Path(compact_root) / row['session']),
+                            'frames': n})
+        self.raw_data_dirs = entries
+        selected = self.split_raw_data(entries, config_data.BEGIN, config_data.END)
+        pre = config_data.PREPROCESS
+        if pre.RESIZE.H != pre.RESIZE.W or not pre.DO_CHUNK:
+            raise ValueError('Compact mode requires square crops and chunking')
+        if pre.USE_PSUEDO_PPG_LABEL or list(pre.DATA_AUG) != ['None']:
+            raise ValueError('Compact mode requires contact BVP and no data augmentation')
+        self.compact_cache = CompactCache(compact_root, pre.RESIZE.H, max_sessions=8)
+        self._compact_clips = [(item['index'], i, i * pre.CHUNK_LENGTH, (i + 1) * pre.CHUNK_LENGTH)
+                               for item in sorted(selected, key=lambda x: x['index'])
+                               for i in range(item['frames'] // pre.CHUNK_LENGTH)]
+        self.inputs = [str(Path(compact_root) / f'{session}_input{i}.npy')
+                       for session, i, _, _ in self._compact_clips]  # logical names, not duplicate files
+        self.labels = [p.replace('_input', '_label') for p in self.inputs]
+        self.preprocessed_data_len = len(self.inputs)
+        if not self.inputs:
+            raise ValueError(f'{name}: compact split contains no clips')
+        print(f'[compact] {name}: {len(selected)} sessions, {len(self.inputs)} clips, {compact_root}')
+
+    def __getitem__(self, index):
+        if self.compact_cache is None:
+            return super().__getitem__(index)
+        session, chunk_id, start, stop = self._compact_clips[index]
+        pre = self.config_data.PREPROCESS
+        data, label = self.compact_cache.clip(session, start, stop, pre.DATA_TYPE, pre.LABEL_TYPE)
+        if self.data_format == 'NDCHW':
+            data = np.transpose(data, (0, 3, 1, 2))
+        elif self.data_format == 'NCDHW':
+            data = np.transpose(data, (3, 0, 1, 2))
+        elif self.data_format != 'NDHWC':
+            raise ValueError(f'Unsupported data format: {self.data_format}')
+        return data, label, session, str(chunk_id)
 
     def get_raw_data(self, data_path):
         """Returns one entry per released session that has video, BVP and face boxes."""
@@ -93,7 +161,7 @@ class KoreanrPPGLoader(BaseLoader):
     def split_raw_data(self, data_dirs, begin, end):
         """Returns the sessions of the selected participants (no participant spans two splits)."""
         kfold_test_fold = bool(getattr(self.config_data, "KFOLD_TEST_FOLD", False))
-        if begin == 0 and end == 1 and not kfold_test_fold:
+        if begin == 0 and end == 1 and not kfold_test_fold and not getattr(self.config_data, 'KFOLD_CSV', ''):
             return data_dirs
 
         participants = {}
@@ -104,6 +172,10 @@ class KoreanrPPGLoader(BaseLoader):
         kfold_id = int(getattr(self.config_data, "KFOLD_ID", -1))
         if kfold_csv and kfold_id >= 0:
             folds = pd.read_csv(kfold_csv, dtype={"participant_key": str})
+            if folds['participant_key'].duplicated().any():
+                raise ValueError('Duplicate participants in KFOLD_CSV')
+            if set(participants) - set(folds['participant_key']):
+                raise ValueError('Session participants are absent from KFOLD_CSV')
             test_keys = set(folds.loc[folds["fold"] == kfold_id, "participant_key"])
             if kfold_test_fold:
                 selected = sorted(k for k in participants if k in test_keys)
@@ -129,6 +201,11 @@ class KoreanrPPGLoader(BaseLoader):
         if self.dataset_name not in ("train", "valid"):
             raise ValueError("KFOLD_SPLIT_CSV is only defined for the train and valid loaders")
         split = pd.read_csv(split_csv, dtype={"participant_key": str})
+        fold_rows = split[split['fold'] == kfold_id]
+        if fold_rows['participant_key'].duplicated().any() or not set(fold_rows['split']) <= {'train', 'valid'}:
+            raise ValueError('Duplicate participants or invalid split labels in KFOLD_SPLIT_CSV')
+        if set(fold_rows['participant_key']) != set(pool):
+            raise ValueError('KFOLD_SPLIT_CSV must cover the complete non-test participant pool')
         rows = split[(split["fold"] == kfold_id) & (split["split"] == self.dataset_name)]
         wanted = set(rows["participant_key"])
         unknown = wanted - set(pool)
@@ -150,8 +227,8 @@ class KoreanrPPGLoader(BaseLoader):
                 bvps = self.read_wave(os.path.join(session_path, BVP_FILE))
             face_bboxes = self.read_face_bboxes(os.path.join(session_path, BBOX_FILE))
 
-            min_len = min(len(frames), len(bvps), len(face_bboxes))
-            frames, bvps, face_bboxes = frames[:min_len], bvps[:min_len], face_bboxes[:min_len]
+            min_len = min(len(frames), len(bvps))
+            frames, bvps = frames[:min_len], bvps[:min_len]
 
             frames_clips, bvps_clips = self.preprocess_with_bboxes(frames, bvps, face_bboxes, config_preprocess)
             input_name_list, _ = self.save_multi_process(frames_clips, bvps_clips, saved_filename)
@@ -184,8 +261,8 @@ class KoreanrPPGLoader(BaseLoader):
         return np.asarray(df["bvp"].values[int(skip_seconds * fps):])
 
     @staticmethod
-    def read_face_bboxes(bbox_file, skip_seconds=SKIP_SECONDS, fps=30):
-        """Reads face_bboxes.csv (x1, y1, x2, y2) after skipping the first `skip_seconds`."""
+    def read_face_bboxes(bbox_file, skip_seconds=0, fps=30):
+        """Read all available spatial annotations; their row count does not truncate signals."""
         df = pd.read_csv(bbox_file)
         return df[["x1", "y1", "x2", "y2"]].values[int(skip_seconds * fps):]
 
@@ -235,7 +312,10 @@ class KoreanrPPGLoader(BaseLoader):
         total_frames = len(frames)
         resized_frames = np.zeros((total_frames, height, width, 3), dtype=np.float32)
 
-        x1, y1, x2, y2 = np.median(bboxes, axis=0).astype(int)
+        valid = np.isfinite(bboxes).all(axis=1) & (bboxes[:, 2] > bboxes[:, 0]) & (bboxes[:, 3] > bboxes[:, 1])
+        if not valid.any():
+            raise ValueError('No valid spatial face boxes')
+        x1, y1, x2, y2 = np.median(bboxes[valid], axis=0).astype(int)
         if use_larger_box:
             w, h = x2 - x1, y2 - y1
             cx, cy = (x1 + x2) // 2, (y1 + y2) // 2

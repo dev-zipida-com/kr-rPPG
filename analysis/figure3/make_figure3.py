@@ -1,3 +1,4 @@
+# HISTORICAL ENTRYPOINT: helpers retained; current manuscript uses the release pipeline.
 #!/usr/bin/env python3
 """Draw Figure 3 (task-stratified MAE with bootstrap 95% CIs) from figure3_values.py output.
 
@@ -59,4 +60,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit('Historical analysis entrypoint. For release-based results use analysis/release_figures/render_figure3.py.')

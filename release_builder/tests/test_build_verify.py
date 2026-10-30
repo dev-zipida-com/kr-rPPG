@@ -272,8 +272,8 @@ def _top_coded_comorbidity_count(session, release):
     _set_recorded_cell(release, "other_comorbidity_count", ">=1")  # the former top-coding
 
 
-def _comorbidity_count_above_five(session, release):
-    _set_recorded_cell(release, "other_comorbidity_count", "6")  # five indicators at most
+def _comorbidity_count_above_one(session, release):
+    _set_recorded_cell(release, "other_comorbidity_count", "2")  # binary indicator permits only 0/1
 
 
 def _implausible_fpg_in_participants(session, release):
@@ -314,7 +314,7 @@ def _nul_byte_in_csv(session, release):
      _category_in_rounded_column, _implausible_fpg_in_participants, _implausible_sbp_in_participants,
      _measurement_blanked_without_dictionary, _fractional_age_in_participants, _off_step_height_in_participants,
      _odd_weight_in_participants, _height_in_metres_in_participants, _bmi_not_from_height_and_weight,
-     _bmi_with_two_decimals, _top_coded_comorbidity_count, _comorbidity_count_above_five],
+     _bmi_with_two_decimals, _top_coded_comorbidity_count, _comorbidity_count_above_one],
 )
 def test_verifier_detects_tampering(fake_source, tamper):
     cfg = _config(fake_source)
@@ -597,10 +597,10 @@ def test_protected_roots_come_from_the_environment(monkeypatch, tmp_path):
 
 
 def test_metadata_only_version_bump_keeps_session_records_valid(fake_source):
-    assert __version__ == "1.5.0"
+    assert __version__ == "1.6.0"
     cfg = _config(fake_source)
     report = build_release(cfg)
-    assert report["builder_version"] == "1.5.0"
+    assert report["builder_version"] == "1.6.0"
     assert cfg.settings()["builder_version"] == C.SESSION_OUTPUT_VERSION == "1.1.0"
     records = [json.loads(p.read_text()) for p in cfg.records_dir.glob("*.json")]
     assert records and all(r["settings"]["builder_version"] == "1.1.0" for r in records)
@@ -913,7 +913,7 @@ def test_metadata_refresh_rewrites_only_the_changed_metadata_files(fake_source):
     assert report["metadata_written"] == ["participants.csv", "participants_dictionary.csv"]
     assert report["metadata_unchanged"] == ["fold_assignment.csv", "task_session_availability.csv"]
     assert report["release_unchanged_outside_metadata"] is True and report["release_changes_outside_metadata"] == []
-    assert report["source_unchanged"] is True and report["builder_version"] == __version__ == "1.5.0"
+    assert report["source_unchanged"] is True and report["builder_version"] == __version__ == "1.6.0"
     assert report["release_entries_watched"] > 20
     assert {name: (cfg.release_root / "metadata" / name).read_bytes() for name in C.METADATA_FILES} == expected
     assert _outside_metadata(cfg) == outside  # every session file: same bytes, size, mtime and ctime

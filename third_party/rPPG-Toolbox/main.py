@@ -10,6 +10,7 @@ import torch
 from config import get_config
 from dataset import data_loader
 from neural_methods import trainer
+from neural_methods.trainer.CheckpointSelection import register_best_checkpoint
 from unsupervised_methods.unsupervised_predictor import unsupervised_predict
 from torch.utils.data import DataLoader
 
@@ -33,6 +34,8 @@ train_generator.manual_seed(RANDOM_SEED)
 # RAM use moderate when two GPUs train at once. Not result-relevant.
 RPPG_DATALOADER_WORKERS = int(os.environ.get("RPPG_DATALOADER_WORKERS", 4))
 RPPG_PREFETCH_FACTOR = int(os.environ.get("RPPG_PREFETCH_FACTOR", 2))
+RPPG_EVAL_DATALOADER_WORKERS = int(os.environ.get("RPPG_EVAL_DATALOADER_WORKERS", RPPG_DATALOADER_WORKERS))
+RPPG_EVAL_PERSISTENT_WORKERS = os.environ.get("RPPG_EVAL_PERSISTENT_WORKERS", "1") != "0"
 
 
 def seed_worker(worker_id):
@@ -92,6 +95,7 @@ def train_and_test(config, data_loader_dict):
     else:
         raise ValueError('Your Model is Not Supported  Yet!')
     model_trainer.train(data_loader_dict)
+    register_best_checkpoint(config, model_trainer)
     model_trainer.test(data_loader_dict)
 
 
@@ -252,13 +256,13 @@ if __name__ == "__main__":
                 device=config.DEVICE)
             data_loader_dict["valid"] = DataLoader(
                 dataset=valid_data,
-                num_workers=RPPG_DATALOADER_WORKERS,
+                num_workers=RPPG_EVAL_DATALOADER_WORKERS,
                 batch_size=config.TRAIN.BATCH_SIZE,  # batch size for val is the same as train
                 shuffle=False,
                 worker_init_fn=seed_worker,
                 generator=general_generator,
                 pin_memory=True,
-                persistent_workers=True,
+                persistent_workers=RPPG_EVAL_PERSISTENT_WORKERS,
                 prefetch_factor=RPPG_PREFETCH_FACTOR,
             )
         else:
@@ -307,13 +311,13 @@ if __name__ == "__main__":
                 device=config.DEVICE)
             data_loader_dict["test"] = DataLoader(
                 dataset=test_data,
-                num_workers=RPPG_DATALOADER_WORKERS,
+                num_workers=RPPG_EVAL_DATALOADER_WORKERS,
                 batch_size=config.INFERENCE.BATCH_SIZE,
                 shuffle=False,
                 worker_init_fn=seed_worker,
                 generator=general_generator,
                 pin_memory=True,
-                persistent_workers=True,
+                persistent_workers=RPPG_EVAL_PERSISTENT_WORKERS,
                 prefetch_factor=RPPG_PREFETCH_FACTOR,
             )
         else:

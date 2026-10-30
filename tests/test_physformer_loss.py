@@ -34,7 +34,13 @@ sys.path.insert(0, str(REPO / "tools"))
 import fetch_physformer_loss as fetch  # noqa: E402
 from neural_methods.loss import PhysFormerLossAdapter as adapter  # noqa: E402
 
-STAND_IN = b"class TorchLossComputer:\n    SOURCE = 'stand-in for the pinned upstream file'\n"
+STAND_IN = (
+    b"class TorchLossComputer:\n"
+    b"    SOURCE = 'stand-in for the pinned upstream file'\n"
+    b"    @staticmethod\n"
+    b"    def uninvoked_distribution(target, std):\n"
+    b"        target_distribution = [normal_sampling(int(target), i, std) for i in range(40, 180)]\n"
+)
 
 
 def _upstream_present() -> bool:
@@ -74,7 +80,7 @@ def test_pins_are_consistent():
     assert (adapter.HR_MIN_BPM, adapter.HR_MAX_BPM) == (40.0, 179.0)
     assert REFERENCE["upstream_sha256"] == adapter.UPSTREAM_SHA256
     assert adapter.UPSTREAM_COMMIT in (TOOLBOX / "NOTICE.md").read_text()
-    assert adapter.LOCATION_ENV in (REPO / "README.md").read_text()
+    assert adapter.LOCATION_ENV in (TOOLBOX / "NOTICE.md").read_text()
 
 
 def test_fetched_file_is_git_ignored():
@@ -133,10 +139,22 @@ def test_the_module_is_built_from_the_verified_bytes(monkeypatch, tmp_path, isol
     path.write_bytes(STAND_IN)
     monkeypatch.setattr(adapter, "UPSTREAM_SHA256", hashlib.sha256(STAND_IN).hexdigest())
     monkeypatch.setenv(adapter.LOCATION_ENV, str(path))
+    provenance_dir = tmp_path / "provenance"
+    monkeypatch.setenv("RPPG_JOB_PROVENANCE_DIR", str(provenance_dir))
     cls = adapter.upstream_loss_computer()
     assert cls.SOURCE == "stand-in for the pinned upstream file"
     module = sys.modules[adapter.UPSTREAM_MODULE]
     assert cls.__module__ == adapter.UPSTREAM_MODULE and module.__file__ == str(path)
+    runtime_sha = hashlib.sha256(adapter._runtime_source(STAND_IN)).hexdigest()
+    assert getattr(module, adapter._VERIFIED_MARK) == adapter.UPSTREAM_SHA256
+    assert getattr(module, adapter._PATCH_MARK) == adapter.RUNTIME_PATCH_ID
+    assert getattr(module, adapter._RUNTIME_SHA_MARK) == runtime_sha
+    provenance = json.loads((provenance_dir / "physformer_loss_runtime.json").read_text())
+    assert provenance["upstream_sha256"] == adapter.UPSTREAM_SHA256
+    assert provenance["runtime_source_sha256"] == runtime_sha
+    assert provenance["patch_id"] == adapter.RUNTIME_PATCH_ID
+    assert provenance["replaced_statements"] == 1 and provenance["source_file_modified"] is False
+    assert path.read_bytes() == STAND_IN
     assert not (tmp_path / "__pycache__").exists()  # no bytecode cache next to the file
     path.write_bytes(b"class TorchLossComputer:\n    SOURCE = 'edited'\n")
     adapter.upstream_loss_computer.cache_clear()
@@ -152,7 +170,7 @@ def test_a_module_imported_without_the_check_is_refused(monkeypatch, tmp_path, i
     unchecked = types.ModuleType(adapter.UPSTREAM_MODULE)
     unchecked.__file__ = str(path)
     sys.modules[adapter.UPSTREAM_MODULE] = unchecked
-    with pytest.raises(adapter.UpstreamLossMissing, match="without the sha256 check"):
+    with pytest.raises(adapter.UpstreamLossMissing, match="without the same sha256 check and runtime patch"):
         adapter.upstream_loss_computer()
 
 

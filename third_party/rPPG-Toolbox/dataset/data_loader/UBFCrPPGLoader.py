@@ -12,10 +12,11 @@ from multiprocessing import Pool, Process, Value, Array, Manager
 import cv2
 import numpy as np
 from dataset.data_loader.BaseLoader import BaseLoader
+from dataset.data_loader.ExternalCompactLoader import ExternalCompactMixin
 from tqdm import tqdm
 
 
-class UBFCrPPGLoader(BaseLoader):
+class UBFCrPPGLoader(ExternalCompactMixin, BaseLoader):
     """The data loader for the UBFC-rPPG dataset."""
 
     def __init__(self, name, data_path, config_data, device=None):
@@ -39,7 +40,8 @@ class UBFCrPPGLoader(BaseLoader):
                 name(string): name of the dataloader.
                 config_data(CfgNode): data settings(ref:config.py).
         """
-        super().__init__(name, data_path, config_data, device)
+        if not self._init_external_compact(name, data_path, config_data):
+            super().__init__(name, data_path, config_data, device)
 
     def get_raw_data(self, data_path):
         """Returns data directories under the path(For UBFC-rPPG dataset)."""

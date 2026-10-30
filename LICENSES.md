@@ -19,17 +19,16 @@ work under RAIL v1.1, not MIT.
   Attribution-NonCommercial 4.0 International licence
   ([CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/); legal code:
   https://creativecommons.org/licenses/by-nc/4.0/legalcode), with responsible-use conditions that protect
-  the participants (stated in the dataset record's `LICENSE.md`); see [Data access](README.md#data-access)
-  in the README.
+  the participants (stated in the dataset record's `LICENSE.md`).
 * **Model weights** are not part of this repository. Users train the KR-rPPG models themselves with the
   provided configs. The official rPPG-Toolbox weights used for two Table 8 rows are linked, with their sha256
   in [`checkpoints/checkpoints_manifest.csv`](checkpoints/checkpoints_manifest.csv), not re-hosted.
 * **rPPG-Toolbox's `neural_methods/loss/PhysFormerLossComputer.py`** is not part of this repository: its header
-  states that it was "modified based on" hr-cnn (GPL-3.0). [`tools/fetch_physformer_loss.py`](tools/fetch_physformer_loss.py)
-  downloads the unmodified file from upstream into your working copy (git-ignored) or into a file outside it that
-  you name; it stays under the terms that apply to it upstream and must not be committed or redistributed with
-  this repository. The KR-rPPG change to that loss is applied by
+  states that it was "modified based on" hr-cnn (GPL-3.0). The separately fetched, hash-verified upstream file
+  stays under its upstream terms and is not redistributed with this repository. The KR-rPPG adaptation is applied by
   `third_party/rPPG-Toolbox/neural_methods/loss/PhysFormerLossAdapter.py` (RAIL v1.1 like the rest of that
-  folder), which contains no code of the upstream file.
+  folder), which contains no copy of the upstream loss module. It applies `dldl-target-int-hoist-v1` in memory;
+  the fetched source file remains unchanged. See the adapter entry in
+  [`NOTICE.md`](third_party/rPPG-Toolbox/NOTICE.md).
 * **Third-party components and datasets** referenced by the code: see
   [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).

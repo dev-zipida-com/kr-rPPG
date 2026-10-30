@@ -1,3 +1,4 @@
+# HISTORICAL ENTRYPOINT: helpers retained; current manuscript uses the release pipeline.
 #!/usr/bin/env python3
 """Figure 3 values: task-stratified session-level MAE of the five models (KR-rPPG 5-fold, out-of-fold).
 
@@ -120,4 +121,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit('Historical analysis entrypoint. For release-based results use benchmark/summarize_release_benchmark.py.')

@@ -16,7 +16,6 @@ Section 3.2 apply to this folder and to anything derived from it; see
 | Base commit | `b7500b848f84ad7f86e277b4612563b69f4f88f9` (2025-09-15, "Support LADH and SUMS Datasets (#405)") |
 | Licence | Responsible AI Source Code License v1.1 (upstream `LICENSE`, unchanged since 2023-06-06) |
 | Copyright | The rPPG-Toolbox contributors (the licence file carries no copyright line) |
-| Citation requested by upstream | Liu, X. et al. rPPG-Toolbox: Deep Remote PPG Toolbox. NeurIPS 2023 (Datasets and Benchmarks). |
 
 Only the files the KR-rPPG benchmark needs are included. Not included: other models, loaders and
 configs, `final_model_release/` (official weights: download them from upstream, see
@@ -29,16 +28,18 @@ KR-rPPG config uses the Haar-cascade backend (`BACKEND: HC`); `BaseLoader` impor
 PhysFormer needs the upstream PhysFormer loss: `tools/fetch_physformer_loss.py` (repository root) downloads the
 unmodified file from this base commit, checks its sha256 and places it in `neural_methods/loss/` (git-ignored,
 never committed here) or, with `--dest`, in a file outside the repository that the environment variable
-`KR_RPPG_PHYSFORMER_LOSS` names; `PhysFormerTrainer` stops with these instructions while it is missing or
-differs from the pinned file.
+`KR_RPPG_PHYSFORMER_LOSS` names. The adapter verifies that source, then applies the named
+`dldl-target-int-hoist-v1` patch in memory. The source file remains unchanged; the original source hash,
+runtime source hash and patch identifier are recorded separately. PhysFormer stops if the source is absent
+or its hash differs from the pinned file.
 
 ## Statement of changes
 
 Who: the KR-rPPG authors (2026). What: the files below. Exact line-level changes against the base commit
 are in [`CHANGES/`](CHANGES) (one unified diff per modified file, `a/` = upstream, `b/` = this folder).
 
-This folder holds 47 files besides `CHANGES/`: 24 unmodified upstream files, 17 modified files (one patch
-each in `CHANGES/`, 17 patches), 2 new files, and 4 documentation files (`LICENSE`, `NOTICE.md`, `README.md`,
+This folder holds 51 files besides `CHANGES/`: 24 unmodified upstream files, 17 modified files (one patch
+each in `CHANGES/`, 17 patches), 6 new files, and 4 documentation files (`LICENSE`, `NOTICE.md`, `README.md`,
 `USE_RESTRICTIONS.md`). The upstream PhysFormer loss file, once fetched, is not part of this folder's contents.
 
 ### Unmodified upstream files (byte-identical to the base commit; 24)
@@ -51,17 +52,20 @@ each in `CHANGES/`, 17 patches), 2 new files, and 4 documentation files (`LICENS
 (`__init__.py`, `unsupervised_predictor.py`, `utils.py`,
 `methods/{CHROME_DEHAAN,GREEN,ICA_POH,LGI,OMIT,PBV,POS_WANG}.py`).
 
-### New files (2)
+### New files (6)
 
 | File | Purpose |
 |---|---|
-| `neural_methods/loss/PhysFormerLossAdapter.py` | KR-rPPG wrapper around the upstream PhysFormer loss, which is not distributed here (see above). Checks the sha256 of the fetched `PhysFormerLossComputer.py` (base commit; `neural_methods/loss/` or `$KR_RPPG_PHYSFORMER_LOSS`) and runs exactly the bytes it checked, limits the target heart rate to 40-179 bpm and then calls the upstream `cross_entropy_power_spectrum_DLDL_softmax2`; contains no code of the upstream file. Result-relevant: this is the KR-rPPG change to the PhysFormer loss that was active in the manuscript runs (previously an in-place edit of the upstream file); outputs and gradients are identical to that edit (`tests/test_physformer_loss.py`). |
-| `dataset/data_loader/KoreanrPPGLoader.py` | KR-rPPG loader for the BFDT release layout (`pNNN/T0x/video_bfdt_ffv1.avi`, `BVP_synchronized.csv`, `face_bboxes.csv`; the video file name can be changed with `KR_RPPG_VIDEO_FILE`); session-median face box enlarged by `LARGE_BOX_COEF`, first 6 s skipped; k-fold selection from `metadata/fold_assignment.csv` (`KFOLD_CSV`, `KFOLD_ID`, `KFOLD_TEST_FOLD`) and an optional per-fold train/valid list (`KFOLD_SPLIT_CSV`). Adapted from upstream loaders. |
+| `neural_methods/loss/PhysFormerLossAdapter.py` | Verifies the pinned, separately fetched upstream loss, applies `dldl-target-int-hoist-v1` in memory, and limits target HR to 40–179 bpm before DLDL evaluation. The patch evaluates `int(target)` once instead of 140 times while retaining the Gaussian and floating-point operation order. The verified original bytes and patched runtime bytes are distinguished explicitly; this repository does not redistribute the upstream loss module. |
+| `dataset/data_loader/KoreanrPPGLoader.py` | Release-layout loader using the median of all finite valid session boxes, enlarged by `LARGE_BOX_COEF`; skips the first 180 video/BVP samples without truncating them to the bbox row count. Supports released participant folds and train/validation split lists, plus an optional shared compact cache. Adapted from upstream loaders. |
+| `dataset/data_loader/CompactCache.py` | Loads shared uint8 crops and reconstructs normalized model inputs lazily. Session moments accumulate in float64; this is not bit-identical to full-array float32 normalization. |
+| `dataset/data_loader/ExternalCompactLoader.py` | Shares external test caches across models and checks canonical session identities, sampling rates, exclusions and evaluation endpoints. Training and validation use the source loaders. |
+| `dataset/data_loader/PackedCache.py` | Lossless indexed zlib blocks for uint8 crops, with bounded decompression caching and checks of block lengths and source statistics. |
+| `neural_methods/trainer/CheckpointSelection.py` | Records the validation-selected epoch, checkpoint hash and validation loss, and creates consistent `Best` aliases after training. |
 
 ### Modified files (17)
 
-**Result-relevant changes** (they affect trained weights or reported numbers; all were active in the
-manuscript runs unless noted):
+**Training and scoring changes relative to the pinned upstream commit:**
 
 | File | Change |
 |---|---|
@@ -77,14 +81,14 @@ manuscript runs unless noted):
 | File | Change |
 |---|---|
 | `config.py` | New keys `TRAIN.PRETRAINED_MODEL`, `*.DATA.KFOLD_CSV / KFOLD_ID / KFOLD_TEST_FOLD / KFOLD_SPLIT_CSV`, `MODEL.DEEPPHYS.FRAME_DEPTH`, `MODEL.PHYSFORMER.GRA_SHARP` (default -1.0 = use THETA, for KR-rPPG k-fold training and for scoring the models trained with this code; 2.0 = upstream's value, used to score the official PURE / UBFC-rPPG weights; see the `PhysFormerTrainer.py` row); `${VAR}` environment-variable expansion in YAML files, with an error when a variable is unset. |
-| `main.py` | `KoreanrPPG` dataset dispatch; seed from `RPPG_SEED` (default 100, as upstream); data-loader workers/prefetch from `RPPG_DATALOADER_WORKERS` / `RPPG_PREFETCH_FACTOR` (upstream: 16 workers), `pin_memory`, persistent workers. |
+| `main.py` | `KoreanrPPG` dataset dispatch; seed from `RPPG_SEED` (default 100, as upstream); configurable train/evaluation loader workers, prefetch and persistent workers; calls `CheckpointSelection.py` after training to register the validation-selected checkpoint. |
 | `dataset/data_loader/__init__.py`, `neural_methods/trainer/__init__.py` | Import only the loaders/trainers used here. |
-| `dataset/data_loader/BaseLoader.py` | `DiffOnly` label type; YOLO5Face imported only for `Y5F` backends; `cv2.setNumThreads(1)`; preprocessing worker count from `PREPROCESS_WORKERS`; a failing preprocessing subprocess raises instead of leaving a partial cache; one example path in a comment generalised. |
-| `dataset/data_loader/UBFCPHYSLoader.py` | Streaming crop/resize path that avoids loading full 1024x1024 videos into memory when face detection is fixed to the first frame (output-equivalent; disable with `RPPG_UBFCPHYS_STREAM_PREPROCESS=0`); `USE_PSUEDO_PPG_LABEL` read defensively. |
-| `dataset/data_loader/MMPDLoader.py` | Subject folders sorted; `build_file_list_retroactive` matches MMPD cache names (`subject<N>_..._input<k>.npy`). |
-| `dataset/data_loader/PURELoader.py`, `UBFCrPPGLoader.py` | Directory listings sorted; PNG paths resolved with `realpath`; comment/typo clean-up. |
+| `dataset/data_loader/BaseLoader.py` | `DiffOnly` label type; YOLO5Face imported only for `Y5F` backends; `cv2.setNumThreads(1)`; preprocessing worker count from `PREPROCESS_WORKERS`; a failing preprocessing subprocess raises instead of leaving a partial cache. |
+| `dataset/data_loader/UBFCPHYSLoader.py` | Streaming fixed-face crop/resize path avoids loading complete videos into memory; optional `ExternalCompactLoader` test path; `USE_PSUEDO_PPG_LABEL` read defensively. |
+| `dataset/data_loader/MMPDLoader.py` | Subject folders sorted; retroactive file lists match MMPD cache names; optional `ExternalCompactLoader` test path. |
+| `dataset/data_loader/PURELoader.py`, `UBFCrPPGLoader.py` | Directory listings sorted; PURE PNG paths resolved with `realpath`; optional `ExternalCompactLoader` test paths; comment/typo clean-up. |
 | `neural_methods/trainer/EfficientPhysTrainer.py`, `neural_methods/trainer/TscanTrainer.py` | Optional `TRAIN.PRETRAINED_MODEL` loading (unused: every model was trained from random initialisation); `weights_only=True` (next row). |
-| all five trainers (`DeepPhysTrainer.py`, `EfficientPhysTrainer.py`, `PhysFormerTrainer.py`, `PhysnetTrainer.py`, `TscanTrainer.py`) | Every `torch.load` call passes `weights_only=True`, so a checkpoint is loaded as tensors only and cannot run code (added in this repository; the manuscript runs used upstream's plain `torch.load`). The benchmark checkpoints are plain `state_dict`s, so they load and score exactly as before. |
+| all five trainers (`DeepPhysTrainer.py`, `EfficientPhysTrainer.py`, `PhysFormerTrainer.py`, `PhysnetTrainer.py`, `TscanTrainer.py`) | Checkpoint loading uses `weights_only=True` for tensor state dictionaries. The separate benchmark prediction-pickle reader accepts trusted local prediction files and maps their tensor storage to CPU; it is not a checkpoint loader. |
 
 ## Third-party code inside this folder
 

@@ -3,13 +3,14 @@
 
 The generated files contain only ${PLACEHOLDER} paths; the KR-rPPG adaptation of rPPG-Toolbox
 (third_party/rPPG-Toolbox/config.py) expands them from the environment and refuses to run when one
-is unset. See README.md ("Environment variables") for the meaning of each placeholder.
+is unset.
 
     python benchmark/make_configs.py            # (re)write benchmark/configs/
     python benchmark/make_configs.py --check    # exit 1 if the committed configs are stale
 
-Settings reproduce the configs of the manuscript runs (models, preprocessing, epochs, learning rates,
-checkpoint epochs per cell); only paths and the KR-rPPG data layout differ (release IDs, BFDT videos).
+Release-basis runs retain the architecture hyperparameters. Every new KR fold
+uses its minimum-validation-loss checkpoint for all test domains; old manuscript
+epoch numbers are not used. Compact KR inputs are selected by KR_RPPG_COMPACT_ROOT.
 """
 
 from __future__ import annotations
@@ -94,15 +95,7 @@ UBFC_PHYS_EXCLUSION_LIST = [
     "s50_T3", "s52_T3", "s53_T3",
 ]
 
-# Checkpoint epochs actually scored in the manuscript (README, step 2); the evaluation configs name these files.
-# Internal 5-fold row + Figure 3: PhysNet uses the best-validation epoch, DeepPhys the last saved
-# epoch (folds 0-3 stopped at the 8 h limit), the other models epoch 9.
-KR_EPOCHS_INTERNAL = {
-    "physnet": (9, 8, 7, 8, 9), "deepphys": (8, 7, 7, 8, 9),
-    "physformer": (9,) * 5, "tscan": (9,) * 5, "efficientphys": (9,) * 5,
-}
-# KR -> external rows: PhysNet epoch 9 in every fold (differs from the internal row in folds 1-3).
-KR_EPOCHS_EXTERNAL = dict(KR_EPOCHS_INTERNAL, physnet=(9,) * 5)
+# Existing external-training checkpoints retain their documented validation selection.
 MMPD_EPOCHS = {"physnet": 5, "physformer": 4, "deepphys": 5, "tscan": 9, "efficientphys": 9}
 # Official rPPG-Toolbox checkpoints (final_model_release/ at upstream commit b7500b8), linked not re-hosted.
 UPSTREAM_WEIGHTS = {
@@ -121,9 +114,9 @@ EXTERNAL_TO_KR_CACHE = {"tscan": "deepphys"}
 METRICS = ["MAE", "RMSE", "MAPE", "Pearson", "SNR"]
 
 
-def kr_checkpoint(model: str, fold: int, epoch: int) -> str:
-    """Where the evaluation configs expect the KR-rPPG fold models that users train with kr_kfold/train."""
-    return f"${{KR_RPPG_CHECKPOINTS}}/kr_5fold/{model}/KFold_{model}_fold{fold}_Epoch{epoch}.pth"
+def kr_checkpoint(model: str, fold: int) -> str:
+    """Registered by main.train_and_test from the trainer's validation-best epoch."""
+    return f"${{KR_RPPG_CHECKPOINTS}}/kr_5fold/{model}/KFold_{model}_fold{fold}_Best.pth"
 
 
 def cache_dir(dataset: str, cache: str) -> str:
@@ -174,6 +167,8 @@ def kfold(section: dict, fold: int, test_fold: bool, fold_name: str) -> dict:
     section["KFOLD_ID"] = fold
     if test_fold:
         section["KFOLD_TEST_FOLD"] = True
+    else:
+        section["KFOLD_SPLIT_CSV"] = "${KR_RPPG_WORK}/protocol/train_valid_split.csv"
     section["FOLD"] = {"FOLD_NAME": fold_name, "FOLD_PATH": ""}
     return section
 
@@ -223,17 +218,15 @@ def kr_kfold_configs() -> Dict[str, dict]:
             cfg["TRAIN"] = train_block(model, f"KFold_{model}_fold{fold}")
             cfg["TRAIN"]["DATA"] = kfold(data_section("kr", cache, 0.0, 0.9), fold, False, f"kfold{fold}")
             cfg["VALID"] = {"DATA": kfold(data_section("kr", cache, 0.9, 1.0), fold, False, f"kfold{fold}")}
-            # Post-training test inside the train pool, as in the manuscript runs; the reported numbers
-            # come from the separate out-of-fold evaluation configs (kr_kfold/eval).
+            # One automatic held-out evaluation of the validation-selected model.
             cfg["TEST"] = {"METRICS": list(METRICS), "USE_LAST_EPOCH": False,
-                           "DATA": kfold(data_section("kr", cache, 0.85, 1.0), fold, False, f"kfold{fold}")}
+                           "DATA": kfold(data_section("kr", cache), fold, True, f"kfold{fold}_testfold")}
             cfg["INFERENCE"] = inference("")
             out[f"kr_kfold/train/fold{fold}_{model}.yaml"] = cfg
 
-            epoch = KR_EPOCHS_INTERNAL[model][fold]
             test = kfold(data_section("kr", cache), fold, True, f"kfold{fold}_testfold")
             out[f"kr_kfold/eval/fold{fold}_{model}.yaml"] = test_only(
-                model, test, kr_checkpoint(model, fold, epoch),
+                model, test, kr_checkpoint(model, fold),
                 f"${{KR_RPPG_WORK}}/runs/kr_kfold_eval/{model}_fold{fold}")
     return out
 
@@ -247,9 +240,11 @@ def kr_to_external_configs() -> Dict[str, dict]:
                 test = data_section(dataset, cache)
                 if dataset == "ubfc_phys":
                     test["FILE_LIST_PATH"] = cache_dir(dataset, cache) + "/DataFileLists"
-                batch = 32 if dataset == "mmpd" and model != "deepphys" else 4
+                # PhysFormer's 128x128x160 activations exceed a 24-GiB GPU at batch 32.
+                # Inference uses eval mode; batching changes memory use, not clip selection.
+                batch = 32 if dataset == "mmpd" and model not in {"deepphys", "physformer"} else 4
                 # PhysFormer fold models keep the default gra_sharp (THETA = 0.7), the value they were trained with.
-                cfg = test_only(model, test, kr_checkpoint(model, fold, KR_EPOCHS_EXTERNAL[model][fold]),
+                cfg = test_only(model, test, kr_checkpoint(model, fold),
                                 f"${{KR_RPPG_WORK}}/runs/kr_to_{dataset}/{model}_fold{fold}", batch)
                 out[f"kr_to_{dataset}/{model}_fold{fold}.yaml"] = cfg
     return out

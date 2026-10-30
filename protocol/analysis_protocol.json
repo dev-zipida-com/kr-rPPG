@@ -1,0 +1,147 @@
+{
+  "version": "release-basis-20261026-v1",
+  "main_inputs": "Frozen released AVI and CSV only; no private ID mapping, original OOF labels, or legacy KR caches.",
+  "participants": 296,
+  "sessions": 1166,
+  "metadata_policy": {
+    "source": "released participants.csv",
+    "sample_sd_ddof": 1,
+    "missing_denominator": "nonmissing per variable",
+    "outliers": "include stored values; disclose BMI extreme without silently dropping it",
+    "any_comorbidity": "dm OR htn OR dyslipidemia OR other_comorbidity_count>0; ILD separately",
+    "other_comorbidity_count": "Legacy column name retained; binary presence (0=none,1=at least one); user-authorized metadata-only amendment dated 2026-10-27",
+    "amendment": "metadata_binary_amendment_20261027; video, signals, folds and evaluation protocol unchanged"
+  },
+  "split": {
+    "test": "released fold_assignment.csv",
+    "train_valid": "non-test release participant IDs sorted lexically; first floor(0.9*N) train; remainder valid; explicit CSV",
+    "training_seed": 100,
+    "epochs": 10,
+    "checkpoint": "minimum validation loss; earliest epoch on ties; same selected checkpoint in every test domain"
+  },
+  "input": {
+    "roi": "session median of all finite, positive-area released boxes; int truncation; 1.5 enlargement and clipping to image boundaries",
+    "bbox_short_files": "boxes are spatial ROI annotations; never truncate video or BVP to bbox row count",
+    "skip_frames": 180,
+    "nominal_fs": 30,
+    "frame_policy": "retained frame sequence, no temporal resampling; timestamp gaps summarized separately",
+    "normalization": "session population moments before model-specific chunking",
+    "compact_cache": "direct uint8 INTER_AREA crops at 36/72/128; normalize on demand from session moments; no second spatial resize"
+  },
+  "models": {
+    "physnet": {
+      "size": 72,
+      "chunk": 128,
+      "batch": 8
+    },
+    "physformer": {
+      "size": 128,
+      "chunk": 160,
+      "batch": 4
+    },
+    "deepphys": {
+      "size": 72,
+      "chunk": 180,
+      "batch": 4
+    },
+    "tscan": {
+      "size": 36,
+      "chunk": 180,
+      "batch": 8
+    },
+    "efficientphys": {
+      "size": 72,
+      "chunk": 180,
+      "batch": 8
+    }
+  },
+  "benchmark": {
+    "length": "N=min(video frames,BVP rows)-180",
+    "common_frames": "min(floor(N/128)*128,floor(N/160)*160,floor(N/180)*180)",
+    "predictions": "concatenate full chunks chronologically; trim to common_frames; integrate derivative output before HR estimation",
+    "derivative_convention": {
+      "label_at_index_t": "BVP[t+1]-BVP[t]; divide by session difference SD for DiffNormalized",
+      "clip_boundary": "Read the following sample across clip boundaries; zero-pad only the final session sample",
+      "prediction_reconstruction": "float64 numpy.cumsum after chronological concatenation and common-interval trimming; no initial zero prepended and no sample shift",
+      "reference_boundary": "raw BVP[180:180+common_frames]; forward-difference reconstruction retains its one-sample boundary convention",
+      "boundary_effect_on_performance": "not isolated by this benchmark"
+    },
+    "reference": "raw released BVP on the same common interval; independent of model-specific normalized labels",
+    "hr_estimator": {
+      "detrend": "smoothness-priors lambda=100, sparse solve",
+      "bandpass": "order-1 Butterworth 0.6–3.3 Hz, filtfilt",
+      "spectrum": "periodogram, nfft next power of two, detrend=False",
+      "estimate": "maximum spectral power within inclusive 0.6–3.3 Hz"
+    }
+  },
+  "table7": {
+    "kr": "released T01 raw BVP, whole released session",
+    "external": "original external reference waveforms; fixed task/participant selection",
+    "estimator": "order-1 Butterworth 0.75–2.5 Hz, filtfilt, no smoothness detrend, whole-record next-power-of-two periodogram",
+    "reason": "use one descriptive HR estimator across datasets; explicitly distinguish from model benchmark"
+  },
+  "aggregation": {
+    "internal": "mean session absolute error within participant, then mean across participants",
+    "figure3": "task-wise participant mean; participant bootstrap B=10000 seed=42",
+    "external": "fixed per-dataset common session set; state aggregation unit and fold variability",
+    "reference_hr_ge90": "same common-interval benchmark reference, threshold inclusive 90 bpm"
+  },
+  "schema_version": "kr-rppg-public-analysis-protocol-v1",
+  "status": "prepared_static_publication_template",
+  "release_identity": "../release_identity.json",
+  "normalization_precision": "float32 frame/difference arithmetic; float64 accumulated population moments",
+  "source_scope": "Primary KR analyses consume the locally prepared frozen release described by release_identity.json. Remote publication identity has not been verified.",
+  "declared_exceptions": [
+    {
+      "scope": "historical study records",
+      "description": "Recruitment, consent and ethics approval, acquisition procedures, and original selection or quality-control history are documented from retained study records; these historical claims are not regenerated from the distributed files."
+    },
+    {
+      "scope": "Figure 1 illustrative controls",
+      "description": "The consented original example and additional control transformations use original study images. The released keep-ratio 0.02 example uses the actual distributed BFDT video."
+    },
+    {
+      "scope": "privacy evaluation",
+      "description": "Original gallery images and keep-ratio 1.0, 0.30 and 0.10 control probes require custodian access to original recordings. The keep-ratio 0.02 probe uses the actual distributed BFDT video. Only aggregate privacy results are public."
+    },
+    {
+      "scope": "paired utility controls",
+      "description": "Matched original-video training and testing arms are explicit controls, separate from the primary benchmark on released BFDT videos. Original-video access is required to regenerate these control arms."
+    },
+    {
+      "scope": "external datasets and checkpoints",
+      "description": "External contact waveforms, videos and fixed external-trained weights follow their respective access terms. The public release-based benchmark does not imply that every external weight has a public download."
+    }
+  ],
+  "external_benchmark": {
+    "fixed_session_counts": {
+      "pure": 59,
+      "ubfc_rppg": 42,
+      "mmpd": 655,
+      "ubfc_phys": 101
+    },
+    "nominal_fs_hz": {
+      "pure": 30,
+      "ubfc_rppg": 30,
+      "mmpd": 30,
+      "ubfc_phys": 35
+    },
+    "initial_skip_frames": 0,
+    "common_eval_frames": "min(floor(N/128)*128,floor(N/160)*160,floor(N/180)*180)",
+    "reference": "Independent aligned external contact BVP on the same common interval; use the benchmark.hr_estimator definition; never use a model-specific cached label HR.",
+    "cohort_source": "Public benchmark/external_sources.py and the fixed UBFC_PHYS_EXCLUSION_LIST in benchmark/make_configs.py; one inventory per dataset shared across all models and outgoing folds."
+  },
+  "aggregation_details": {
+    "outgoing_kr_to_external": "Mean absolute session error within each of the five KR folds, then the mean of the five fold MAEs.",
+    "incoming_external_to_kr": "Mean absolute session error across all 1166 released KR sessions for one fixed external-trained checkpoint per architecture.",
+    "figure3_ci": "Sort public participant IDs; participant percentile bootstrap with 10000 resamples and a fresh numpy default_rng(42) for each model/group cell.",
+    "figure3_median_and_tail": "Median absolute error and percentage with absolute error >5 bpm are session-level summaries."
+  },
+  "table7_selection": {
+    "kr": "All 293 released T01 BVP waveforms, full recording; nominal30Hz.",
+    "pure": "10 steady task01 waveforms; sampling rate from waveform timestamps.",
+    "mmpd": "Exactly Stationary recordings, excluding Stationary (after exercise); mean recording HR within each of33participants; reference sampling30Hz.",
+    "ubfc_phys": "All56 resting T1 raw BVP recordings, sampled64Hz; this is distinct from the101-session benchmark cohort."
+  },
+  "publication_note": "A prepared protocol template is not evidence that remote dataset publication or all model-result generation is complete."
+}

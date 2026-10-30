@@ -137,4 +137,4 @@ INFERENCE:
   EVALUATION_WINDOW:
     USE_SMALLER_WINDOW: false
     WINDOW_SIZE: 10
-  MODEL_PATH: ${KR_RPPG_CHECKPOINTS}/kr_5fold/physformer/KFold_physformer_fold0_Epoch9.pth
+  MODEL_PATH: ${KR_RPPG_CHECKPOINTS}/kr_5fold/physformer/KFold_physformer_fold0_Best.pth

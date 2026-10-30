@@ -1,3 +1,4 @@
+# HISTORICAL ENTRYPOINT: helpers retained; current manuscript uses the release pipeline.
 #!/usr/bin/env python3
 """Print manuscript Table 8 (session-level MAE, bpm) from the tables of collect_predictions.py.
 
@@ -10,7 +11,7 @@ Row definitions (as in the manuscript):
   * KR-rPPG -> external: each of the 5 fold models is scored on the whole external dataset with its own
     label HR; the row value is the mean of the 5 fold MAEs.
   * external -> KR-rPPG: one model per architecture scored on every released KR-rPPG session.
-Only aggregates are printed. Expected values are those of the manuscript (see README for caveats); rows
+Only aggregates are printed. Expected values are historical manuscript values; rows
 without listed reference values print "-" in parentheses.
 """
 
@@ -27,7 +28,7 @@ from common import DISPLAY, MODELS, work_dir
 
 # family (results/<family>.csv), row label, expected manuscript values in MODELS order (None: none listed).
 # The external -> KR-rPPG values are MAEs over the 1,166 released sessions, the sessions session_row() averages
-# over on the release. Every PhysFormer value is scored with the gra_sharp the model was trained with (README).
+# over on the release. Every PhysFormer value is scored with the gra_sharp the model was trained with.
 ROWS: List[Tuple[str, str, Optional[Tuple[float, ...]]]] = [
     ("kr_kfold_eval", "Internal  KR-rPPG -> KR-rPPG", (1.47, 1.51, 11.83, 7.48, 4.81)),
     ("kr_to_pure", "External  KR-rPPG -> PURE", (3.65, 4.34, 2.74, 0.31, 2.80)),
@@ -101,10 +102,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             values = session_row(df)
         reference = expected if expected is not None else (None,) * len(MODELS)
         print(f"{label:34s}" + "".join(f"{fmt(values.get(m))} {fmt_expected(e)}" for m, e in zip(MODELS, reference)))
-    print("\nvalues in parentheses: manuscript; see README 'Expected results' for why KR-rPPG test rows differ "
-          "when the released (BFDT) videos are used")
+    print("\nValues in parentheses: historical manuscript values.")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit('Historical analysis entrypoint. For release-based results use benchmark/summarize_release_benchmark.py.')
