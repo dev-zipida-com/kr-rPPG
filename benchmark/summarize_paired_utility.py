@@ -9,7 +9,8 @@ import json
 import numpy as np
 import pandas as pd
 
-MODELS = ['physnet', 'physformer']
+ALL_MODELS = ['physnet', 'physformer', 'deepphys', 'tscan', 'efficientphys']
+DEFAULT_MODELS = ['physnet', 'physformer']
 EXTERNAL = ['pure', 'ubfc_rppg', 'mmpd']
 
 
@@ -17,20 +18,20 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def read_result(path, reference, internal, require_only_two=False):
+def read_result(path, reference, internal, models, require_exact_models=False):
     frame = pd.read_csv(path, dtype={'model': str, 'fold': str, 'session': str, 'participant_key': str, 'task': str})
     provenance = json.loads(path.with_suffix('.provenance.json').read_text())
     if provenance['partial_monitoring'] or provenance['model_specific_label_hr_used']:
         raise ValueError(f'Incomplete or model-dependent references: {path}')
     if provenance['reference_sha256'] != sha(reference):
         raise ValueError(f'Unexpected reference: {path}')
-    if require_only_two and set(frame.model) != set(MODELS):
+    if require_exact_models and set(frame.model) != set(models):
         raise ValueError(f'Unexpected raw control model set: {path}')
-    frame = frame[frame.model.isin(MODELS)].copy()
+    frame = frame[frame.model.isin(models)].copy()
     ref = pd.read_csv(reference, dtype={'session': str, 'fold': str, 'participant_key': str}).set_index('session')
     if frame.duplicated(['model', 'fold', 'session']).any():
         raise ValueError(f'Duplicate prediction: {path}')
-    for model in MODELS:
+    for model in models:
         selected = frame[frame.model == model]
         if internal:
             if len(selected) != len(ref) or set(selected.session) != set(ref.index):
@@ -62,7 +63,10 @@ def main():
     parser.add_argument('--reference', type=Path, required=True)
     parser.add_argument('--external-reference-dir', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--models', nargs='+', choices=ALL_MODELS, default=list(DEFAULT_MODELS),
+                        help='Models that have a matched control; each contributes ten cells')
     args = parser.parse_args()
+    models = list(dict.fromkeys(args.models))
     sources, frames, cells = {}, {}, []
     definitions = [
         ('released', 'released', args.release_results / 'kr_kfold.csv'),
@@ -72,8 +76,9 @@ def main():
     ]
     for training, testing, path in definitions:
         key = f'{training}_to_{testing}'
-        frames[key], sources[key] = read_result(path, args.reference, True, require_only_two=key != 'released_to_released')
-        for model in MODELS:
+        frames[key], sources[key] = read_result(path, args.reference, True, models,
+                                                require_exact_models=key != 'released_to_released')
+        for model in models:
             group = frames[key][frames[key].model == model]
             participant_mae = group.groupby('participant_key').abs_error.mean()
             cells.append({'model': model, 'training_videos': training, 'test_dataset': 'kr_rppg',
@@ -84,8 +89,9 @@ def main():
         reference = args.external_reference_dir / f'{dataset}_reference_hr.csv'
         for training, results in [('released', args.release_results), ('raw', args.raw_results)]:
             key = f'{training}_to_{dataset}'
-            frames[key], sources[key] = read_result(results / f'kr_to_{dataset}.csv', reference, False, require_only_two=training == 'raw')
-            for model in MODELS:
+            frames[key], sources[key] = read_result(results / f'kr_to_{dataset}.csv', reference, False, models,
+                                                    require_exact_models=training == 'raw')
+            for model in models:
                 group = frames[key][frames[key].model == model]
                 fold_mae = group.groupby('fold').abs_error.mean()
                 cells.append({'model': model, 'training_videos': training, 'test_dataset': dataset,
@@ -120,13 +126,13 @@ def main():
                                 'reference_hr': row['reference_hr_raw_arm'],
                                 'raw_arm_ae': row['abs_error_raw_arm'], 'released_arm_ae': row['abs_error_released_arm'],
                                 'delta_ae_released_minus_raw': row['delta_ae']})
-    if len(cells) != 20:
-        raise ValueError('Table 10 must contain all 20 numeric cells')
+    if len(cells) != 10 * len(models):
+        raise ValueError('Table 10 must contain ten numeric cells per model')
     args.output.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(paired_rows).to_csv(args.output / 'paired_utility_results.csv', index=False)
     pd.DataFrame(cells).drop(columns=['fold_mae']).to_csv(args.output / 'table10_cells.csv', index=False)
     report = {'schema_version': 'release-basis-paired-utility-v1', 'script_sha256': sha(__file__),
-              'sources': sources, 'cells': cells, 'paired_contrasts': contrasts,
+              'models': models, 'sources': sources, 'cells': cells, 'paired_contrasts': contrasts,
               'all_internal_pairs_same_fold_reference_and_session': True,
               'same_domain_oof_reused_without_duplicate_inference': True,
               'confidence_intervals': 'Not introduced; Table 10 reports the prespecified mean MAE only',
